@@ -98,7 +98,9 @@ void initFrame(){
 	}
 	rightTop[0].setColorInside(blockColor2[0], blockColor2[1], blockColor2[2], 1);
 	rightTop[0].setSize(rightButtonw, rightButtonw);
+	rightTop[1].setColorInside(blockColor2[0], blockColor2[1], blockColor2[2], 1);
 	rightTop[2].setText("current color:");
+	rightTop[3].setColorInside(blockColor2[0], blockColor2[1], blockColor2[2], 1);
 
 	//右中组件
 	for(int i = 0; i < RIGHTMIDDLE;i++){
@@ -122,6 +124,7 @@ void initFrame(){
 	rightBottom[0].setPosition(ww - border - margin * 2 - rightButtonw + margin, 
 			rightBottomy + ((RIGHTBOTTOM - 2) / 2  + 1) * margin + ((RIGHTBOTTOM - 2) / 2) * rightButtonh);
 	rightBottom[0].setColorInside(blockColor2[0], blockColor2[1], blockColor2[2], blockColor2[3]);
+	rightBottom[0].setText("scale:");
 	
 	rightBottom[1].setSize((rightButtonw - margin) / 2, 6);
 	rightBottom[1].setPosition(ww - border - margin * 2 - rightButtonw + margin * 2 + (rightButtonw - margin)/ 2, 
@@ -132,7 +135,7 @@ void initFrame(){
 	slip[0].setSize(7,7);
 	slip[0].setPosition(rightTop[0].x - 3, rightTop[0].y-3);
 	slip[1].setSize(5,rightButtonh);
-	slip[1].setPosition(rightTop[1].x - 2, rightTop[1].y);
+	slip[1].setPosition(rightTop[1].x + rightTop[1].w/2 - 2, rightTop[1].y);
 	slip[2].setSize(5,rightButtonh);
 	slip[2].setPosition(rightMiddle[7].x - 2, rightMiddle[7].y - rightButtonh / 2 + 2);
 	slip[3].setSize(5,rightButtonh);
@@ -146,35 +149,80 @@ void initFrame(){
 
 
 void showColorBlock(){
+	glBegin(GL_POLYGON);
+	glColor4d(0,0,0,1);
+	glVertex2d(rightTop[0].x,rightTop[0].y + rightTop[0].h / 2);
+	glVertex2d(rightTop[0].x,rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w,rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w,rightTop[0].y + rightTop[0].h / 2);
+	glEnd();
+
 	glBegin(GL_QUAD_STRIP);
 	glColor4d(1,0,0,0);
 	glVertex2d(rightTop[0].x, rightTop[0].y);
 	glColor4d(1,0,0,1);
-	glVertex2d(rightTop[0].x, rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x, rightTop[0].y + rightTop[0].h/2);
 	glColor4d(1,1,0,0);
 	glVertex2d(rightTop[0].x + rightTop[0].w / 6, rightTop[0].y);
 	glColor4d(1,1,0,1);
-	glVertex2d(rightTop[0].x + rightTop[0].w / 6, rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 6, rightTop[0].y + rightTop[0].h/2);
 	glColor4d(0,1,0,0);
 	glVertex2d(rightTop[0].x + rightTop[0].w / 3, rightTop[0].y);
 	glColor4d(0,1,0,1);
-	glVertex2d(rightTop[0].x + rightTop[0].w / 3 , rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 3 , rightTop[0].y + rightTop[0].h/2);
 	glColor4d(0,1,1,0);
 	glVertex2d(rightTop[0].x + rightTop[0].w / 2, rightTop[0].y);
 	glColor4d(0,1,1,1);
-	glVertex2d(rightTop[0].x + rightTop[0].w / 2, rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 2, rightTop[0].y + rightTop[0].h/2);
 	glColor4d(0,0,1,0);
 	glVertex2d(rightTop[0].x + rightTop[0].w / 3 * 2, rightTop[0].y);
 	glColor4d(0,0,1,1);
-	glVertex2d(rightTop[0].x + rightTop[0].w / 3 * 2, rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 3 * 2, rightTop[0].y + rightTop[0].h/2);
 	glColor4d(1,0,1,0);
 	glVertex2d(rightTop[0].x + rightTop[0].w / 6 * 5, rightTop[0].y);
 	glColor4d(1,0,1,1);
-	glVertex2d(rightTop[0].x + rightTop[0].w / 6 * 5, rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 6 * 5, rightTop[0].y + rightTop[0].h/2);
 	glColor4d(1,0,0,0);
 	glVertex2d(rightTop[0].x + rightTop[0].w, rightTop[0].y);
 	glColor4d(1,0,0,1);
-	glVertex2d(rightTop[0].x + rightTop[0].w, rightTop[0].y + rightTop[0].h);
+	glVertex2d(rightTop[0].x + rightTop[0].w, rightTop[0].y + rightTop[0].h/2);
+	glEnd();
+
+	glBegin(GL_QUAD_STRIP);
+	glColor4d(1,0,0,1);
+	glVertex2d(rightTop[0].x, rightTop[0].y +rightTop[0].h/2);
+	glColor4d(1,0,0,0);
+	glVertex2d(rightTop[0].x, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
+
+	glColor4d(1,1,0,1);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 6, rightTop[0].y +rightTop[0].h/2);
+	glColor4d(1,1,0,0);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 6, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
+
+	glColor4d(0,1,0,1);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 3 , rightTop[0].y +rightTop[0].h/2);
+	glColor4d(0,1,0,0);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 3, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
+
+	glColor4d(0,1,1,1);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 2, rightTop[0].y +rightTop[0].h/2);
+	glColor4d(0,1,1,0);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 2, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
+
+	glColor4d(0,0,1,1);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 3 * 2, rightTop[0].y +rightTop[0].h/2);
+	glColor4d(0,0,1,0);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 3 * 2, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
+
+	glColor4d(1,0,1,1);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 6 * 5, rightTop[0].y +rightTop[0].h/2);
+	glColor4d(1,0,1,0);
+	glVertex2d(rightTop[0].x + rightTop[0].w / 6 * 5, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
+
+	glColor4d(1,0,0,1);
+	glVertex2d(rightTop[0].x + rightTop[0].w, rightTop[0].y +rightTop[0].h/2 );
+	glColor4d(1,0,0,0);
+	glVertex2d(rightTop[0].x + rightTop[0].w, rightTop[0].y +rightTop[0].h/2 + rightTop[0].h/2);
 	glEnd();
 }
 
@@ -208,134 +256,4 @@ void showFrame(){
 	showColorBlock();
 	showColorBlock2();
 	for(int i  = 0 ; i < SLIP; i++) slip[i].show();
-}
-
-//检查鼠标进入按钮
-void checkInButton(int x, int y){
-	for(int i = 0 ; i < LEFTTOP ;i++){
-		if(x>leftTop[i].x && x<leftTop[i].x+leftTop[i].w && y>leftTop[i].y && y<leftTop[i].y+leftTop[i].h){
-			leftTop[i].mouseHover();
-			leftTop[i].mouseIn = 1;
-			glFlush();
-		}
-		else{
-			if(leftTop[i].mouseIn){
-				glutPostRedisplay();
-				leftTop[i].mouseIn = 0;
-			}
-		}
-	}
-	for(int i = 0 ; i < LEFTBOTTOM ;i++){
-		if(x>leftBottom[i].x && x<leftBottom[i].x+leftBottom[i].w && y>leftBottom[i].y && y<leftBottom[i].y+leftBottom[i].h){
-			leftBottom[i].mouseHover();
-			leftBottom[i].mouseIn = 1;
-			glFlush();
-		}
-		else{
-			if(leftBottom[i].mouseIn){
-				glutPostRedisplay();
-				leftBottom[i].mouseIn = 0;
-			}
-		}
-	}
-	for(int i = 0 ; i < SLIP; i++){
-		if(x>slip[i].x && x<slip[i].x+slip[i].w && y>slip[i].y && y<slip[i].y+slip[i].h){
-			slip[i].mouseHover();
-			slip[i].mouseIn = 1;
-			glFlush();
-		}
-		else{
-			if(slip[i].mouseIn){
-				glutPostRedisplay();
-				slip[i].mouseIn = 0;
-			}
-		}
-	}
-}
-
-int drawing = 0;
-int choosedType = 0;
-int slipType = 0;
-int picking = 0;
-int slipping = 0;
-//检查鼠标按键
-int checkPressButton(int x, int y){
-	for(int i = 0 ;i < 5;i++){
-		if(leftBottom[i].mouseIn){
-			choosedType = i;
-			picking = 0;
-			slipping = 0;
-			return 1;
-		}
-	}
-	if(leftBottom[6].mouseIn){
-		picking = 1;
-		drawing = 0;
-		return 1;
-	}
-	for(int i = 0 ; i < SLIP; i++){
-		if(slip[i].mouseIn){
-			slipType = i;
-			slipping = 1;
-			picking = 0;
-			drawing = 0;
-			return 1;
-		}
-	}
-}
-
-int checkPressEntry(int x, int y){
-	printf("checking picking\n");
-	GLuint selectBuff[1000]={0};//创建一个保存选择结果的数组    
-	GLint hits, viewport[4];      
-
-	glGetIntegerv(GL_VIEWPORT, viewport); //获得viewport    
-	glSelectBuffer(2000, selectBuff); //告诉OpenGL初始化  selectbuffer    
-	glRenderMode(GL_SELECT);    //进入选择模式    
-
-	glInitNames();  //初始化名字栈    
-	glPushName(0);  //在名字栈中放入一个初始化名字，这里为‘0’    
-
-	glMatrixMode(GL_PROJECTION);    //进入投影阶段准备拾取    
-	glPushMatrix();     //保存以前的投影矩阵    
-	glLoadIdentity();   //载入单位矩阵    
-
-
-	gluPickMatrix( x,y,4,4,	viewport);
-	gluOrtho2D(0.0,ww,0.0,wh);
-
-	glInitNames();
-
-	entryList.showAll();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-  
-
-    hits = glRenderMode(GL_RENDER); // 从选择模式返回正常模式,该函数返回选择到对象的个数    
-    GLuint names = 0;
-    if(hits > 0){
-		GLuint *ptr, minZ;
-		printf ("hits = %d\n", hits);
-		ptr = (GLuint *) selectBuff;
-		minZ = 0xffffffff;
-		for (int i = 0; i < hits; i++) {
-			printf("%d %d %d %d\n",*(ptr),*(ptr+1),*(ptr+2),*(ptr+3));
-			if (*(ptr+1) < minZ) {
-				minZ = *(ptr+1);
-				names = *(ptr+3);
-			}
-			ptr += 4;
-		}
-    }
-	entry_node * temp = entryList.phead->next;
-	while(temp!=NULL){
-		if(temp->insideNameId == names || temp->borderNameId == names){
-			printf("polygon %d picked\n", names);
-			temp->picked = 1;
-		}
-		else temp->picked = 0;
-		temp = temp->next;
-	}
 }

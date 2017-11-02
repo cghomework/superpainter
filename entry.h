@@ -205,6 +205,31 @@ class entry_node{
 				glPopName();
 			}
 		}
+		void showPick(){
+			glPushName(1);
+			// 1000100010001000
+			glLineStipple(1, 0x8888);
+			glBegin(GL_LINE_STRIP & GL_LINE_LOOP);
+				glVertex2d(xmin-1,ymin-1);
+				glVertex2d(xmin-1,ymax+1);
+				glVertex2d(xmax+1,ymax+1);
+				glVertex2d(xmax+1,ymin-1);
+			glEnd();
+			glPopName();
+			glLineStipple(1, 0xFFFF);
+		}
+		void showPoints(){
+			vertice_node *temp = vhead->next;
+			while(temp!=NULL){
+				glBegin(GL_LINE_STRIP & GL_LINE_LOOP);
+					glVertex2d(temp->x-2,temp->y-2);
+					glVertex2d(temp->x-2,temp->y+2);
+					glVertex2d(temp->x+2,temp->y+2);
+					glVertex2d(temp->x+2,temp->y-2);
+				glEnd();
+				temp = temp->next;
+			}
+		}
 		// 函数power_of_two用于判断一个整数是不是2的整数次幂    
 		int power_of_two(int n){    
 		    if( n <= 0 )    
@@ -215,9 +240,9 @@ class entry_node{
 			glColor4dv(color);
 		}	
 	public:
-		int xmin,xmax,ymin,ymax;
-		int x,y;
-		int w,h;
+		double xmin,xmax,ymin,ymax;
+		double x,y;
+		double w,h;
 		int insideNameId;
 		int borderNameId;
 		double colorInside[4];
@@ -230,15 +255,17 @@ class entry_node{
 		int width;
 		int mouseIn; 
 		int picked;
+		int blick;
 		GLuint _tex;
 		int tex;
 		char *_text;
+		char *tex_dir;
 		int nvertices;
 		entry_node * next;
 		vertice_node * vhead;
 		vertice_node * vtail;
 		entry_node(int _x = 0, int _y = 0, int _w = 125, int _h = 25):
-			_type(POLYGON),nvertices(0),next(NULL),x(_x),y(_y),w(_w),h(_h),solid(1),border(1),mouseIn(0),picked(0),tex(0),_text(NULL),width(2),insideNameId(0),borderNameId(0){
+			_type(POLYGON),nvertices(0),next(NULL),x(_x),y(_y),w(_w),h(_h),solid(1),border(1),mouseIn(0),picked(0),blick(0),tex(0),_text(NULL),tex_dir(NULL),width(2),insideNameId(0),borderNameId(0){
 			for(int i = 0 ; i < 3;i++){
 				colorInside[i] = 1.0;
 				colorBorder[i] = 0.0;
@@ -321,6 +348,8 @@ class entry_node{
 				else showLine();
 			}
 			if(_text != NULL) showText();
+			if(picked) showPick();
+			if(blick) showPoints();
 			glPopMatrix();
 			glPopAttrib();
 		}
@@ -362,6 +391,8 @@ class entry_node{
 			glPopAttrib();
 		}
 		int setTexImage(const char* file_name){
+			tex_dir = new char[strlen(file_name)];
+			strcpy(tex_dir, file_name);
 			GLint width, height, total_bytes;    
 		    GLubyte* pixels = 0;    
 		    GLuint last_texture_ID=0, texture_ID = 0;    
@@ -501,46 +532,82 @@ class entry_node{
 			h = abs(ymax - ymin);
 		}
 		void movePoint(double _x, double _y,double newx, double newy){
+			double dx = newx - _x;
+			double dy = newy - _y;
 			vertice_node * temp = vhead->next;
 			while(temp!=NULL){
-				if(temp->x == _x || temp->y == _y ) break;
+				if(temp->x < _x+5 && temp->x > _x -5 && temp->y < _y + 5 && temp->y > _y -5 ) break;
 				temp = temp->next;
 			}
-			int tempx = temp->x;
-			int tempy = temp->y;
-			temp->left->x += newx - tempx;
-			temp->left->y += newy - tempy;
-			temp->right->x += newx - tempx;
-			temp->right->y += newy - tempy;
-			temp->x = newx;
-			temp->y = newy;
+			if(temp == NULL) return;
+			temp->x += dx;
+			temp->y += dy;
+			temp->left->x += dx;
+			temp->left->y += dy;
+			temp->right->x += dx;
+			temp->right->y += dy;
+			refreshmaxmin();
+		}
+		void refreshmaxmin(){
+			xmin = ww;
+			xmax = 0;
+			ymin = wh;
+			ymax = 0;
+			vertice_node * temp = vhead->next;
+			while(temp!=NULL){
+				double _x = temp->x;
+				double _y = temp->y;
+				if(_x<xmin) xmin = _x;
+				if(_x>xmax) xmax = _x;
+				if(_y<ymin) ymin = _y;
+				if(_y>ymax) ymax = _y;
+				temp = temp->next;
+			}
+			w = abs(xmax - xmin);
+			h = abs(ymax - ymin);
 		}
 		void changePoints(double _x,double _y,double newx,double newy){
-			double neww = w;
-			double newh = h;
+
+			double dx = newx - _x;
+			double dy = newy - _y;
 			double ratex = 1;
 			double ratey = 1;
-			if(_x == xmax) neww += newx - _x;
-			if(_x == xmin) neww -= newx - _x;
-			if(_y == ymax) newh += newy - _y;
-			if(_y == ymin) newh -= newy - _y;
-			ratex = neww / w;
-			ratey = newh / h;
+			int side = 0;
+			double basex = xmax;
+			double basey = ymax;
+			if(xmax-2 < _x && _x < xmax+4){
+				ratex = (w+dx)/w;
+				basex = xmin;
+			}
+			else if(xmin-4 < _x && _x < xmin + 2){
+				ratex = (w-dx)/w;
+				basex = xmax;
+			}
+			if(ymax-2 < _y && _y < ymax+4){
+				ratey = (h+dy)/h;
+				basey = ymin;
+			}
+			else if(ymin-4 < _y  && _y < ymin+2){
+				ratey = (h-dy)/h;
+				basey = ymax;
+			}
+			if(ratex == 0) ratex = 1;
+			if(ratey == 0) ratey = 1;
 
 			vertice_node * temp = vhead->next;
 			while(temp!=NULL){
-				temp->left->x *= ratex;
-				temp->left->y *= ratey;
-				temp->right->x *= ratex;
-				temp->right->y *= ratey;
-				temp->x *= newx;
-				temp->y *= newy;
+				temp->left->x = ratex * (temp->left->x - basex) + basex;
+				temp->left->y = ratey * (temp->left->y - basey) + basey;
+				temp->right->x = ratex * (temp->right->x - basex) + basex;
+				temp->right->y = ratey * (temp->right->y - basey) + basey;
+				temp->x = ratex * (temp->x - basex) + basex;
+				temp->y = ratey * (temp->y - basey) + basey;
 				temp = temp->next;
 			}
+			refreshmaxmin();
 		}
 		void rotatePoints(double _x,double _y,double newx,double newy){}
 		void movePoints(double _x,double _y,double newx,double newy){
-			printf("bug1\n");
 			int dx = newx - _x;
 			int dy = newy - _y;
 			vertice_node * temp = vhead->next;
@@ -553,21 +620,149 @@ class entry_node{
 				temp->right->y += dy;
 				temp = temp->next;
 			}
+			xmax += dx;
+			xmin += dx;
+			ymax += dy;
+			ymin += dy;
 		}
 		int deletePoint(double _x, double _y){
 			if(nvertices == 0) return 0;
 			vertice_node * temp = vhead;
-			temp->x = _x;
-			temp->y = _y;
-			vtail->next = temp;
-			vtail = vtail->next;
-			nvertices++;
-			if(_x<xmin) xmin = _x;
-			if(_x>xmax) xmax = _x;
-			if(_y<ymin) ymin = _y;
-			if(_y>ymax) ymax = _y;
-			w = abs(xmax - xmin);
-			h = abs(ymax - ymin);
+			while(temp->next!=NULL){
+				if(temp->next->x == _x && temp->next->y == _y) break;
+				temp = temp->next;
+			}
+			vertice_node * temp2 = temp->next;
+			temp->next = temp2->next;
+			delete temp2;
+			refreshmaxmin();			
+		}
+		void save_status(int & type, int & no_of_vertices, double  vertices_list[], int  status_int[], double  status_double[], char * & tex_, char * & text){
+			status_int[0] = xmin;
+			status_int[1] = xmax;
+			status_int[2] = ymin;
+			status_int[3] = ymax;
+			status_int[4] = x;
+			status_int[5] = y;
+			status_int[6] = w;
+			status_int[7] = h;
+			status_int[8] = solid;
+			status_int[9] = border;
+			status_int[10] = width;
+			status_int[11] = tex;
+
+			status_double[0] = colorInside[0];
+			status_double[1] = colorInside[1];
+			status_double[2] = colorInside[2];
+			status_double[3] = colorInside[3];
+
+			status_double[4] = colorBorder[0];
+			status_double[5] = colorBorder[1];
+			status_double[6] = colorBorder[2];
+			status_double[7] = colorBorder[3];
+
+			status_double[8] = colorHoverInside[0];
+			status_double[9] = colorHoverInside[1];
+			status_double[10] = colorHoverInside[2];
+			status_double[11] = colorHoverInside[3];
+
+			status_double[12] = colorHoverBorder[0];
+			status_double[13] = colorHoverBorder[1];
+			status_double[14] = colorHoverBorder[2];
+			status_double[15] = colorHoverBorder[3];
+
+			status_double[16] = colorText[0];
+			status_double[17] = colorText[1];
+			status_double[18] = colorText[2];
+			status_double[19] = colorText[3];
+
+			tex_ = tex_dir;
+
+			text = _text;
+
+			no_of_vertices = nvertices;
+			int index = 0;
+			
+			vertice_node * temp = vhead->next;
+
+			while(temp!=NULL){
+
+				vertices_list[index] = temp->x;
+				index++;
+				vertices_list[index] = temp->y;
+				index++;
+				vertice_node * temp_left = temp->left;
+				vertice_node * temp_right = temp->right;
+
+				vertices_list[index] = temp_left->x;
+				index++;
+				vertices_list[index] = temp_left->y;
+				index++;
+
+				vertices_list[index] = temp_right->x;
+				index++;
+				vertices_list[index] = temp_right->y;
+				index++;
+
+				temp = temp->next;
+			}
+			type = _type;
+		}
+		void load_status(int  type_, int no_of_vertices, double  vertices_list[], int  status_int[], double  status_double[], char *tex_, char *text){
+			xmin = status_int[0];
+			xmax = status_int[1];
+			ymin = status_int[2];
+			ymax = status_int[3];
+			x = status_int[4];
+			y = status_int[5];
+			w = status_int[6];
+			h = status_int[7];
+			solid = status_int[8];
+			border = status_int[9];
+			width = status_int[10];
+			tex = status_int[11];
+
+			colorInside[0] = status_double[0];
+			colorInside[1] = status_double[1];
+			colorInside[2] = status_double[2];
+			colorInside[3] = status_double[3];
+
+			colorBorder[0] = status_double[4];
+			colorBorder[1] = status_double[5];
+			colorBorder[2] = status_double[6];
+			colorBorder[3] = status_double[7];
+
+			colorHoverInside[0] = status_double[8];
+			colorHoverInside[1] = status_double[9];
+			colorHoverInside[2] = status_double[10];
+			colorHoverInside[3] = status_double[11];
+
+			colorHoverBorder[0] = status_double[12];
+			colorHoverBorder[1] = status_double[13];
+			colorHoverBorder[2] = status_double[14];
+			colorHoverBorder[3] = status_double[15];
+
+			colorText[0] = status_double[16];
+			colorText[1] = status_double[17];
+			colorText[2] = status_double[18];
+			colorText[3] = status_double[19];
+
+			if(tex_[0] != 'n') setTexImage(tex_);
+			if(text[0] != 'n') setText(text);
+
+			//nvertices = no_of_vertices;
+			int innerindex = 0;
+			//vertice_node * temp = vhead->next;
+			while(innerindex < no_of_vertices){
+				addPoint(vertices_list[innerindex*6],vertices_list[innerindex*6+1]);
+				vtail->left->x = vertices_list[innerindex*6+2];
+				vtail->left->y = vertices_list[innerindex*6+3];
+				vtail->right->x = vertices_list[innerindex*6+4];
+				vtail->right->y = vertices_list[innerindex*6+5];
+				innerindex++;
+			}
+
+			_type = (type)type_;
 		}
 };
 
@@ -587,21 +782,28 @@ class polygons{
 			ptail = temp;
 			size++;
 			ptail->insideNameId = size*2;
-			ptail->borderNameId = size*2-1;
+			ptail->borderNameId = size*2+1;
 		}
 
 		int remove(int i){
-
 			if(size == 0 || size<= i) return 0;
 			entry_node * temp = phead;
-			for(int j = 0 ; j<i;j++){
+			int j = 0;
+			while(temp != NULL){
+				if(j == i){
+					entry_node * temp2 = temp->next;
+					if(ptail == temp2) ptail = temp;
+					temp->next = temp->next->next;
+					delete temp2;
+					size--;
+				}
+				if(j>=i && temp->next != NULL){
+					temp->next->insideNameId = (j+1)*2;
+					temp->next->borderNameId = (j+1)*2+1;
+				}
+				j++;
 				temp = temp->next;
 			}
-			entry_node * temp2 = temp->next;
-			if(ptail == temp2) ptail = temp;
-			temp->next = temp->next->next;
-			delete temp2;
-			size--;
 		}
 
 		void showAll(){
@@ -610,6 +812,9 @@ class polygons{
 				temp->next->show();
 				temp = temp->next;
 			}
+		}
+		void clearAll(){
+			while(size>0) remove(0);
 		}
 //};
 }entryList;

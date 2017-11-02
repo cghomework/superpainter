@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <commdlg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -40,10 +41,15 @@ void mydisplay(){
 	
 	showFrame();
 	showMoving();
+	
 	glFlush();
 }
 
 int main(int argc, char* argv[]){
+
+	HWND hWnd= GetForegroundWindow();    //获取当前的前置窗口
+	ShowWindow(hWnd, SW_HIDE);        //隐藏了获取的窗口.
+
 	glutInit(&argc, argv);
 	glutInitWindowPosition(250,100);
 	glutInitWindowSize(ww,wh);
@@ -59,10 +65,12 @@ int main(int argc, char* argv[]){
 	initFrame();
 	glutDisplayFunc(mydisplay);
 	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_LINE_STIPPLE);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_BLEND);     //启用混合状态  
 	glEnable(GL_TEXTURE_2D);
 	glClearColor(1.0,1.0,1.0,1.0);
 	glutMainLoop();
+	if(opened_file!=NULL) delete opened_file;
 }
