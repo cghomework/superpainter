@@ -1,5 +1,11 @@
 char * opened_file = NULL;
 
+double trans = 1;
+double colorInside_buff[4] = {1,1,1,trans};
+double colorBorder_buff[4] = {0,0,0,trans};
+int choosingColor = 0;
+char * tex_buff = NULL;
+
 int leftMouse = 0;
 int oldx,oldy;
 int newx,newy;
@@ -7,10 +13,11 @@ int newx,newy;
 int drawing = 0;
 int choosedType = 0;
 int slipType = 0;
-int picking = 0;
+int picking = 1;
 int slipping = 0;
 int changingpoints = 0;
 int movingpoint = 0;
+int buttonin = 0;
 
 void saveEntry(int);
 void loadEntry();
@@ -19,6 +26,7 @@ void newColor();
 void clearPick();
 void clearblick();
 void refreshStatus();
+void chooseTex();
 
 //检查鼠标进入按钮
 void checkInButton(int x, int y){
@@ -26,12 +34,14 @@ void checkInButton(int x, int y){
 		if(x>leftTop[i].x && x<leftTop[i].x+leftTop[i].w && y>leftTop[i].y && y<leftTop[i].y+leftTop[i].h){
 			leftTop[i].mouseHover();
 			leftTop[i].mouseIn = 1;
+		buttonin = 1;
 			glFlush();
 		}
 		else{
 			if(leftTop[i].mouseIn){
 				glutPostRedisplay();
 				leftTop[i].mouseIn = 0;
+			buttonin = 0;
 			}
 		}
 	}
@@ -39,12 +49,14 @@ void checkInButton(int x, int y){
 		if(x>leftBottom[i].x && x<leftBottom[i].x+leftBottom[i].w && y>leftBottom[i].y && y<leftBottom[i].y+leftBottom[i].h){
 			leftBottom[i].mouseHover();
 			leftBottom[i].mouseIn = 1;
+		buttonin = 1;
 			glFlush();
 		}
 		else{
 			if(leftBottom[i].mouseIn){
 				glutPostRedisplay();
 				leftBottom[i].mouseIn = 0;
+			buttonin = 0;
 			}
 		}
 	}
@@ -52,12 +64,14 @@ void checkInButton(int x, int y){
 		if(x>slip[i].x && x<slip[i].x+slip[i].w && y>slip[i].y && y<slip[i].y+slip[i].h){
 			slip[i].mouseHover();
 			slip[i].mouseIn = 1;
+		buttonin = 1;
 			glFlush();
 		}
 		else{
 			if(slip[i].mouseIn){
 				glutPostRedisplay();
 				slip[i].mouseIn = 0;
+			buttonin = 0;
 			}
 		}
 	}
@@ -65,45 +79,92 @@ void checkInButton(int x, int y){
 	if(x>rightTop[0].x && x<rightTop[0].x+rightTop[0].w && y>rightTop[0].y && y<rightTop[0].y+rightTop[0].h){
 		rightTop[0].mouseHover();
 		rightTop[0].mouseIn = 1;
+		buttonin = 1;
 		glFlush();
 	}
 	else{
 		if(rightTop[0].mouseIn){
 			glutPostRedisplay();
 			rightTop[0].mouseIn = 0;
+			buttonin = 0;
 		}
 	}
 	if(x>rightTop[1].x && x<rightTop[1].x+rightTop[1].w && y>rightTop[1].y && y<rightTop[1].y+rightTop[1].h){
 		rightTop[1].mouseHover();
 		rightTop[1].mouseIn = 1;
+		buttonin = 1;
 		glFlush();
 	}
 	else{
 		if(rightTop[1].mouseIn){
 			glutPostRedisplay();
 			rightTop[1].mouseIn = 0;
+			buttonin = 0;
 		}
 	}
 	if(x>rightMiddle[7].x && x<rightMiddle[7].x+rightMiddle[7].w && y>rightMiddle[7].y && y<rightMiddle[7].y+rightMiddle[7].h){
 		rightMiddle[7].mouseHover();
 		rightMiddle[7].mouseIn = 1;
+		buttonin = 1;
 		glFlush();
 	}
 	else{
 		if(rightMiddle[7].mouseIn){
 			glutPostRedisplay();
 			rightMiddle[7].mouseIn = 0;
+			buttonin = 0;
+		}
+	}
+	if(x>rightMiddle[1].x && x<rightMiddle[1].x+rightMiddle[1].w && y>rightMiddle[1].y && y<rightMiddle[1].y+rightMiddle[1].h){
+		rightMiddle[1].mouseHover();
+		rightMiddle[1].mouseIn = 1;
+		buttonin = 1;
+		glFlush();
+	}
+	else{
+		if(rightMiddle[1].mouseIn){
+			glutPostRedisplay();
+			rightMiddle[1].mouseIn = 0;
+			buttonin = 0;
+		}
+	}
+	if(x>rightMiddle[3].x && x<rightMiddle[3].x+rightMiddle[3].w && y>rightMiddle[3].y && y<rightMiddle[3].y+rightMiddle[3].h){
+		rightMiddle[3].mouseHover();
+		rightMiddle[3].mouseIn = 1;
+		buttonin = 1;
+		glFlush();
+	}
+	else{
+		if(rightMiddle[3].mouseIn){
+			glutPostRedisplay();
+			rightMiddle[3].mouseIn = 0;
+			buttonin = 0;
+		}
+	}
+	if(x>rightMiddle[5].x && x<rightMiddle[5].x+rightMiddle[5].w && y>rightMiddle[5].y && y<rightMiddle[5].y+rightMiddle[5].h){
+		rightMiddle[5].mouseHover();
+		rightMiddle[5].mouseIn = 1;
+		buttonin = 1;
+		glFlush();
+	}
+	else{
+		if(rightMiddle[5].mouseIn){
+			glutPostRedisplay();
+			rightMiddle[5].mouseIn = 0;
+			buttonin = 0;
 		}
 	}
 	if(x>rightBottom[1].x && x<rightBottom[1].x+rightBottom[1].w && y>rightBottom[1].y && y<rightBottom[1].y+rightBottom[1].h){
 		rightBottom[1].mouseHover();
 		rightBottom[1].mouseIn = 1;
+		buttonin = 1;
 		glFlush();
 	}
 	else{
 		if(rightBottom[1].mouseIn){
 			glutPostRedisplay();
 			rightBottom[1].mouseIn = 0;
+			buttonin = 0;
 		}
 	}
 }
@@ -149,24 +210,37 @@ int checkPressButton(int x, int y){
 		slipType = 0;
 		slipping = 1;
 		drawing = 0;
-		return 1;
 	}
 	if(rightTop[1].mouseIn){
 		slipType = 1;
 		slipping = 1;
 		drawing = 0;
-		return 1;
 	}
 	if(rightMiddle[7].mouseIn){
 		slipType = 2;
 		slipping = 1;
 		drawing = 0;
-		return 1;
 	}
 	if(rightBottom[1].mouseIn){
 		slipType = 3;
 		slipping = 1;
 		drawing = 0;
+	}
+	if(rightMiddle[1].mouseIn){
+		choosingColor = 0;
+		rightMiddle[1].setBorder();
+		rightMiddle[3].setBorder(0);
+		return 1;
+	}
+	if(rightMiddle[3].mouseIn){
+		buttonin = 1;
+		choosingColor = 1;
+		rightMiddle[1].setBorder(0);
+		rightMiddle[3].setBorder();
+		return 1;
+	}
+	if(rightMiddle[5].mouseIn){
+		chooseTex();
 		return 1;
 	}
 	for(int i = 0 ; i < LEFTTOP;i++){
@@ -176,12 +250,122 @@ int checkPressButton(int x, int y){
 			switch(i){
 				case 0:	loadEntry();break;
 				case 1:	newFile();break;
-				case 2:	newColor();break;
-				case 3:	saveEntry(1);break;
-				case 4:	saveEntry(0);break;
+				//case 2:	newColor();break;
+				case 2:	saveEntry(1);break;
+				case 3:	saveEntry(0);break;
 			}
 			return 1;
 		}
+	}
+	if(slipping){
+		int i  = 0;
+		if(rightTop[0].mouseIn) i = 0;
+		if(rightTop[1].mouseIn) i = 1;
+		if(rightMiddle[7].mouseIn) i = 2;
+		if(rightBottom[1].mouseIn) i = 3;
+
+		//更新位置
+		if(i == 0) slip[i].setPosition((x>=rightTop[0].x && x <=rightTop[0].x+ rightTop[0].w?x-3:slip[i].x),(y>=rightTop[0].y && y <=rightTop[0].y+rightTop[0].h?y-3:slip[i].y));
+		else if(i == 1 && x>=rightTop[1].x && x <=rightTop[1].x+ rightTop[1].w) slip[i].setPosition(x-2,slip[i].y);
+		else if(i == 2 && x>=rightMiddle[3].x  && x <=rightMiddle[3].x+ rightMiddle[3].w) slip[i].setPosition(x-2,slip[i].y);
+		else if(i == 3 && x>=rightBottom[1].x  && x <=rightBottom[1].x+ rightBottom[1].w) slip[i].setPosition(x-2,slip[i].y);
+
+		//更新相联板块
+		if(i == 0){
+			double r = 0;
+			double g = 0;
+			double b = 0;
+			double dx = (double)(x - rightTop[0].x)/(double)rightTop[0].w;
+			double dy = -(double)(2*y - 2* rightTop[0].y - rightTop[0].h)/(double)rightTop[0].h;
+			if(dx>1) dx = 1;
+			else if(dx<0) dx = 0;
+			if(dy>1) dy = 1;
+			else if(dy<-1) dy = -1;
+			if(dx < 1.0/6.0){
+				r = 1;
+				g = dx * 6;
+			}
+			else if (dx < 2.0/6.0){
+				r = 1 - (dx-1.0/6.0) *6;
+				g = 1;
+			}
+			else if (dx < 3.0/6.0){
+				g = 1;
+				b = (dx-2.0/6.0) *6;
+			}
+			else if (dx < 4.0/6.0){
+				g = 1 - (dx-3.0/6.0) *6;
+				b = 1;
+			}
+			else if (dx < 5.0/6.0){
+				b = 1;
+				r = (dx-4.0/6.0) *6;
+			}
+			else{
+				b = 1 - (dx-5.0/6.0) *6;
+				r = 1;
+			}
+			if(dy < 0){
+				r += r * dy;
+				g += g * dy;
+				b += b * dy;
+			}
+			else{
+				r += (1-r) * dy;
+				g += (1-g) * dy;
+				b += (1-b) * dy;
+			}
+			rightTop[1].setColorInside(r,g,b);
+			rightTop[3].setColorInside(r,g,b);
+			slip[1].setPosition(rightTop[1].x + rightTop[1].w/2 - 2, rightTop[1].y);
+
+			if(choosingColor == 0){
+				colorInside_buff[0] = r;
+				colorInside_buff[1] = g;
+				colorInside_buff[2] = b;
+				rightMiddle[1].setColorInside(r,g,b);
+			}
+			else{
+				colorBorder_buff[0] = r;
+				colorBorder_buff[1] = g;
+				colorBorder_buff[2] = b;
+				rightMiddle[3].setColorInside(r,g,b);
+			}
+		}
+		if(i == 1){
+			double dx = -(double)(2* x - 2*rightTop[1].x - rightTop[1].w)/(double)rightTop[1].w;
+			double r,g,b;
+			r = rightTop[1].colorInside[0];
+			g = rightTop[1].colorInside[1];
+			b = rightTop[1].colorInside[2];
+			if(dx < 0){
+				r += r * dx;
+				g += g * dx;
+				b += b * dx;
+			}
+			else{
+				r += (1-r) * dx;
+				g += (1-g) * dx;
+				b += (1-b) * dx;
+			}
+			rightTop[3].setColorInside(r,g,b);
+
+			if(choosingColor == 0){
+				colorInside_buff[0] = r;
+				colorInside_buff[1] = g;
+				colorInside_buff[2] = b;
+				rightMiddle[1].setColorInside(r,g,b);
+			}
+			else{
+				colorBorder_buff[0] = r;
+				colorBorder_buff[1] = g;
+				colorBorder_buff[2] = b;
+				rightMiddle[3].setColorInside(r,g,b);
+			}
+		}
+
+		glutPostRedisplay();
+		return 1;
 	}
 }
 
@@ -274,6 +458,53 @@ void checkPressEntry(int x, int y){
 	glutPostRedisplay();
 }
 
+void chooseTex(){
+	int check = MessageBox(NULL, "enable texing?","tex choice", MB_YESNOCANCEL); 
+	buttonin = 0;
+	if(check == IDCANCEL) return;
+	else if(check == IDYES){
+		OPENFILENAME ofn;
+		TCHAR szOpenFileNames[80*MAX_PATH];
+		TCHAR szPath[MAX_PATH];
+		ZeroMemory( &ofn, sizeof(ofn) );
+		ofn.Flags = OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+		ofn.lStructSize = sizeof(ofn);
+		ofn.lpstrFile = szOpenFileNames;
+		ofn.nMaxFile = sizeof(szOpenFileNames);
+		char Filter[] = "BMP Files(*.bmp)\0*.bmp\0All Files(*.*)\0*.*\0\0";
+		ofn.lpstrFilter = TEXT(Filter);
+		if( GetOpenFileName( &ofn ) )
+		{ 
+			lstrcpyn(szPath, szOpenFileNames, ofn.nFileOffset );
+		}
+		if(picking){
+			entry_node * temp = entryList.phead->next;
+			while(temp!=NULL){
+				if(temp->picked == 1){
+					temp->setTexImage(szOpenFileNames);
+					temp->setTex(1);
+					break;
+				}
+				temp = temp->next;
+			}
+		}
+	}
+	else{
+		if(picking){
+			entry_node * temp = entryList.phead->next;
+			while(temp!=NULL){
+				if(temp->picked == 1){
+					temp->setTexImage(NULL);
+					temp->setTex(0);
+					break;
+				}
+				temp = temp->next;
+			}
+		}
+	}
+	//glutPostRedisplay();
+}
+
 void saveEntry(int s = 0){
 	char *filename = NULL;
 	if(s == 0 || opened_file == NULL){
@@ -299,10 +530,9 @@ void saveEntry(int s = 0){
 	else filename = opened_file;
 
 	FILE *fp;
-	fp =fopen(filename, "w");
+	fp =fopen(filename, "wb");
 
   	fwrite(&(entryList.size), sizeof(int), 1, fp);
-
 	int type;
 	int no_of_vertices;
 	int  status_int[12];
@@ -315,19 +545,50 @@ void saveEntry(int s = 0){
 		vertices_list = new double[temp->nvertices*3 * 2];
 
 		temp->save_status(type, no_of_vertices, vertices_list, status_int, status_double, tex, text);
+		/*
+  		printf("%d\n", type);
+  		printf("%d\n", no_of_vertices);
+  		for (int i = 0; i < no_of_vertices*3 * 2; ++i)
+  		{
+  			printf("%lf ", vertices_list[i]);
+  		}
+  		printf("\n");
+  		for (int i = 0; i < 12; ++i)
+  		{
+  			printf("%d ", status_int[i]);
+  		}
+  		printf("\n");
+  		for (int i = 0; i < 20; ++i)
+  		{
+  			printf("%d ", status_double[i]);
+  		}
+  		printf("\n");
+  		if(tex == NULL) printf("n\n");
+  		else printf("%s\n", tex);
+  		if(text == NULL) printf("n\n");
+  		else printf("%s\n", text);
+  		printf("==================================================================================\n");
+		//*/
+
   		fwrite(&type, sizeof(type), 1, fp);
   		fwrite(&no_of_vertices, sizeof(no_of_vertices), 1, fp);  
   		fwrite(vertices_list, sizeof(vertices_list[0]), temp->nvertices*3 * 2, fp);
   		fwrite(status_int, sizeof(status_int[0]), 12, fp);
   		fwrite(status_double, sizeof(status_double[0]), 20, fp);
   		if(tex == NULL){
-  			fputs("n\n\0",fp);
+  			fputs("n\n",fp);
   		}
-  		else fputs( tex, fp );
+  		else{
+  			fputs( tex, fp );
+  			fputs("\n",fp);
+  		}
   		if(text == NULL){
-  			fputs("n\n\0",fp);
+  			fputs("n\n",fp);
   		}
-  		else fputs( text, fp );
+  		else{
+  			fputs( text, fp );
+  			fputs("\n",fp);
+  		}
   		temp = temp->next;
 	}
 	fclose(fp);
@@ -342,7 +603,6 @@ void loadEntry(){
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFile = szOpenFileNames;
 	ofn.nMaxFile = sizeof(szOpenFileNames);
-	//ofn.lpstrFile[0] = '/0';
 
 	char Filter[] = "mytype Files(*.mytype)\0*.mytype\0All Files(*.*)\0*.*\0\0";
 	ofn.lpstrFilter = TEXT(Filter);
@@ -356,11 +616,10 @@ void loadEntry(){
 	newFile();
 
 	FILE *fp;
-	fp =fopen(szOpenFileNames, "r");
+	fp =fopen(szOpenFileNames, "rb");
 
 	int n;
 	fread(&n, sizeof(int), 1, fp);
-
 	int type;
 	int no_of_vertices;
 	int  status_int[12];
@@ -375,13 +634,35 @@ void loadEntry(){
 		entry_node * temp = entryList.ptail;
   		fread(&type, sizeof(type), 1, fp);
   		fread(&no_of_vertices, sizeof(no_of_vertices), 1, fp); 
-		vertices_list = new double[no_of_vertices*3 * 2]; 
+		vertices_list = new double[no_of_vertices*3 * 3]; 
   		fread(vertices_list, sizeof(vertices_list[0]), no_of_vertices*3 * 2, fp);
   		fread(status_int, sizeof(status_int[0]), 12, fp);
   		fread(status_double, sizeof(status_double[0]), 20, fp);
   		fgets( tex, 1000,fp );
   		fgets( text, 1000,fp );
+  		/*
+  		printf("%d\n", type);
+  		printf("%d\n", no_of_vertices);
+  		for (int i = 0; i < no_of_vertices*3 * 2; ++i)
+  		{
+  			printf("%lf ", vertices_list[i]);
+  		}
+  		printf("\n");
+  		for (int i = 0; i < 12; ++i)
+  		{
+  			printf("%d ", status_int[i]);
+  		}
+  		printf("\n");
+  		for (int i = 0; i < 20; ++i)
+  		{
+  			printf("%d ", status_double[i]);
+  		}
+  		printf("\n");
 
+  		printf("%s", tex);
+  		printf("%s", text);
+  		printf("==========================================================================\n");
+		//*/
 		temp->load_status(type, no_of_vertices, vertices_list, status_int, status_double, tex, text);
 
 		index++;
@@ -395,37 +676,35 @@ void loadEntry(){
 void newFile(){
 	if(entryList.size != 0){
 		int check = MessageBox(NULL, "save current file ?","warning", MB_YESNOCANCEL); 
+		if(check == IDCANCEL) return;
 		if(check == IDYES){
 			if(opened_file == NULL) saveEntry(0);
 			else saveEntry(1);
-			entryList.clearAll();
 		}
-		else if(check == IDNO) entryList.clearAll();
-		else if(check == IDCANCEL) return;
+		entryList.clearAll();
 	}
-	if(opened_file!=NULL)delete opened_file;
+	if(opened_file!=NULL){
+		delete opened_file;
+		opened_file = NULL;
+	}
 	glutPostRedisplay();
 }
 
 void newColor(){
-	HWND hdlg;
-
-	hdlg = GetActiveWindow();
-	COLORREF rgbLineColor; 
+	
+	static CHOOSECOLOR stChooseColor; 
+	static COLORREF rgbLineColor;
+	HWND aaaaa= GetForegroundWindow();
 	COLORREF retColor = RGB( 255,0,0);
  	COLORREF cusColor[16];
-	CHOOSECOLOR stChooseColor=
-	{
-		sizeof(CHOOSECOLOR),
-		hdlg,
-		NULL,
-        retColor,
-        cusColor,
-        CC_RGBINIT|CC_FULLOPEN | CC_ENABLEHOOK | CC_ANYCOLOR,
-        0 ,
-        NULL ,
-        NULL
-    };
+	stChooseColor.lStructSize    = sizeof(CHOOSECOLOR) ;
+            stChooseColor.hwndOwner      = aaaaa ;
+            stChooseColor.rgbResult      = rgbLineColor ;
+            stChooseColor.lpCustColors   = (LPDWORD) cusColor;
+            stChooseColor.Flags          = CC_RGBINIT ;
+            stChooseColor.lCustData      = 0 ;
+            stChooseColor.lpfnHook       = NULL ;
+            stChooseColor.lpTemplateName = NULL ;
     if (ChooseColor(&stChooseColor))
 	{
 	    rgbLineColor = stChooseColor.rgbResult;
@@ -459,8 +738,8 @@ void myMouse(int button, int state, int x, int y){
 			entryList.newOne();
 			entryList.ptail->setType(choosedType);
 			entryList.ptail->addPoint(x,y);
-			entryList.ptail->setColorInside(rightTop[3].colorInside[0],rightTop[3].colorInside[1],rightTop[3].colorInside[2]);
-			if(choosedType == 3) entryList.ptail->addPoint(x,y);
+			entryList.ptail->setColorInside(colorInside_buff[0],colorInside_buff[1],colorInside_buff[2]);
+			entryList.ptail->setColorBorder(colorBorder_buff[0],colorBorder_buff[1],colorBorder_buff[2]);
 			refreshStatus();
 		}
 	}
@@ -560,7 +839,125 @@ void myMotion(int x,int y){
 			glutPostRedisplay();
 		}
 	}
+	else if(slipping){
+		int i  = 0;
+		if(rightTop[0].mouseIn) i = 0;
+		if(rightTop[1].mouseIn) i = 1;
+		if(rightMiddle[7].mouseIn) i = 2;
+		if(rightBottom[1].mouseIn) i = 3;
+
+		//更新位置
+		if(i == 0) slip[i].setPosition((x>=rightTop[0].x && x <=rightTop[0].x+ rightTop[0].w?x-3:slip[i].x),(y>=rightTop[0].y && y <=rightTop[0].y+rightTop[0].h?y-3:slip[i].y));
+		else if(i == 1 && x>=rightTop[1].x && x <=rightTop[1].x+ rightTop[1].w) slip[i].setPosition(x-2,slip[i].y);
+		else if(i == 2 && x>=rightMiddle[3].x  && x <=rightMiddle[3].x+ rightMiddle[3].w) slip[i].setPosition(x-2,slip[i].y);
+		else if(i == 3 && x>=rightBottom[1].x  && x <=rightBottom[1].x+ rightBottom[1].w) slip[i].setPosition(x-2,slip[i].y);
+
+		double r = 0;
+		double g = 0;
+		double b = 0;
+
+		//更新相联板块
+		if(i == 0){
+			double dx = (double)(x - rightTop[0].x)/(double)rightTop[0].w;
+			double dy = -(double)(2*y - 2* rightTop[0].y - rightTop[0].h)/(double)rightTop[0].h;
+
+			if(dx>1) dx = 1;
+			else if(dx<0) dx = 0;
+			if(dy>1) dy = 1;
+			else if(dy<-1) dy = -1;
+
+			if(dx < 1.0/6.0){
+				r = 1;
+				g = dx * 6;
+			}
+			else if (dx < 2.0/6.0){
+				r = 1 - (dx-1.0/6.0) *6;
+				g = 1;
+			}
+			else if (dx < 3.0/6.0){
+				g = 1;
+				b = (dx-2.0/6.0) *6;
+			}
+			else if (dx < 4.0/6.0){
+				g = 1 - (dx-3.0/6.0) *6;
+				b = 1;
+			}
+			else if (dx < 5.0/6.0){
+				b = 1;
+				r = (dx-4.0/6.0) *6;
+			}
+			else{
+				b = 1 - (dx-5.0/6.0) *6;
+				r = 1;
+			}
+
+			if(dy < 0){
+				r += r * dy;
+				g += g * dy;
+				b += b * dy;
+			}
+			else{
+				r += (1-r) * dy;
+				g += (1-g) * dy;
+				b += (1-b) * dy;
+			}
+
+
+			rightTop[1].setColorInside(r,g,b);
+			rightTop[3].setColorInside(r,g,b);
+			slip[1].setPosition(rightTop[1].x + rightTop[1].w/2 - 2, rightTop[1].y);
+		}
+		if(i == 1){
+			double dx = -(double)(2* x - 2*rightTop[1].x - rightTop[1].w)/(double)rightTop[1].w;
+			r = rightTop[1].colorInside[0];
+			g = rightTop[1].colorInside[1];
+			b = rightTop[1].colorInside[2];
+			if(dx < 0){
+				r += r * dx;
+				g += g * dx;
+				b += b * dx;
+			}
+			else{
+				r += (1-r) * dx;
+				g += (1-g) * dx;
+				b += (1-b) * dx;
+			}
+			rightTop[3].setColorInside(r,g,b);
+		}
+		if(i == 2){
+			trans= 1 - (double)(x - rightMiddle[3].x)/(double)rightMiddle[3].w;
+		}
+		if(choosingColor == 0){
+			colorInside_buff[0] = r;
+			colorInside_buff[1] = g;
+			colorInside_buff[2] = b;
+			rightMiddle[1].setColorInside(r,g,b);
+		}
+		else{
+			colorBorder_buff[0] = r;
+			colorBorder_buff[1] = g;
+			colorBorder_buff[2] = b;
+			rightMiddle[3].setColorInside(r,g,b);
+		}
+		if(picking){
+			entry_node * temp = entryList.phead->next;
+			while(temp!=NULL){
+				if(temp->picked == 1){
+					if(choosingColor == 0) temp->setColorInside(r,g,b,trans);
+					else temp->setColorBorder(r,g,b,trans);
+					break;
+				}
+				temp = temp->next;
+		}
+		refreshStatus();
+		glutPostRedisplay();
+		}
+		glutPostRedisplay();
+	}
 	else if(picking){
+		if(buttonin){
+			return;
+		}
 		entry_node * temp = entryList.phead->next;
 		while(temp!=NULL){
 			if(temp->picked == 1){
@@ -589,89 +986,6 @@ void myMotion(int x,int y){
 			temp = temp->next;
 		}
 		refreshStatus();
-		glutPostRedisplay();
-	}
-	else if(slipping){
-		int i  = 0;
-		if(rightTop[0].mouseIn) i = 0;
-		if(rightTop[1].mouseIn) i = 1;
-		if(rightMiddle[7].mouseIn) i = 2;
-		if(rightBottom[1].mouseIn) i = 3;
-
-		//更新位置
-		if(i == 0) slip[i].setPosition((x>=rightTop[0].x && x <=rightTop[0].x+ rightTop[0].w?x-3:slip[i].x),(y>=rightTop[0].y && y <=rightTop[0].y+rightTop[0].h?y-3:slip[i].y));
-		else if(i == 1 && x>=rightTop[1].x && x <=rightTop[1].x+ rightTop[1].w) slip[i].setPosition(x-2,slip[i].y);
-		else if(i == 2 && x>=rightMiddle[3].x  && x <=rightMiddle[3].x+ rightMiddle[3].w) slip[i].setPosition(x-2,slip[i].y);
-		else if(i == 3 && x>=rightBottom[1].x  && x <=rightBottom[1].x+ rightBottom[1].w) slip[i].setPosition(x-2,slip[i].y);
-
-		//更新相联板块
-		if(i == 0){
-			double r = 0;
-			double g = 0;
-			double b = 0;
-			double dx = (double)(x - rightTop[0].x)/(double)rightTop[0].w;
-			double dy = -(double)(2*y - 2* rightTop[0].y - rightTop[0].h)/(double)rightTop[0].h;
-			if(dx>1) dx = 1;
-			else if(dx<0) dx = 0;
-			if(dy>1) dy = 1;
-			else if(dy<-1) dy = -1;
-			if(dx < 1.0/6.0){
-				r = 1;
-				g = dx * 6;
-			}
-			else if (dx < 2.0/6.0){
-				r = 1 - (dx-1.0/6.0) *6;
-				g = 1;
-			}
-			else if (dx < 3.0/6.0){
-				g = 1;
-				b = (dx-2.0/6.0) *6;
-			}
-			else if (dx < 4.0/6.0){
-				g = 1 - (dx-3.0/6.0) *6;
-				b = 1;
-			}
-			else if (dx < 5.0/6.0){
-				b = 1;
-				r = (dx-4.0/6.0) *6;
-			}
-			else{
-				b = 1 - (dx-5.0/6.0) *6;
-				r = 1;
-			}
-			if(dy < 0){
-				r += r * dy;
-				g += g * dy;
-				b += b * dy;
-			}
-			else{
-				r += (1-r) * dy;
-				g += (1-g) * dy;
-				b += (1-b) * dy;
-			}
-			rightTop[1].setColorInside(r,g,b);
-			rightTop[3].setColorInside(r,g,b);
-			slip[1].setPosition(rightTop[1].x + rightTop[1].w/2 - 2, rightTop[1].y);
-		}
-		if(i == 1){
-			double dx = -(double)(2* x - 2*rightTop[1].x - rightTop[1].w)/(double)rightTop[1].w;
-			double r,g,b;
-			r = rightTop[1].colorInside[0];
-			g = rightTop[1].colorInside[1];
-			b = rightTop[1].colorInside[2];
-			if(dx < 0){
-				r += r * dx;
-				g += g * dx;
-				b += b * dx;
-			}
-			else{
-				r += (1-r) * dx;
-				g += (1-g) * dx;
-				b += (1-b) * dx;
-			}
-			rightTop[3].setColorInside(r,g,b);
-		}
-
 		glutPostRedisplay();
 	}
 }
@@ -753,7 +1067,6 @@ void showMoving(){
 	}
 }
 
-
 void refreshStatus(){
 	entry_node * temp = entryList.ptail;
 
@@ -764,21 +1077,27 @@ void refreshStatus(){
 			if(temp->picked || temp->blick) break;
 			temp=temp->next;
 		}
-	}
-	if(temp == NULL) return;
-	char xstr[10] = {'x',':'};
-	char ystr[10] = {'y',':'};
-	char wstr[10] = {'w',':'};
-	char hstr[10] = {'h',':'};
-	itoa((int)temp->xmin,&xstr[2],10);
-	itoa((int)temp->ymin,&ystr[2],10);
-	itoa((int)temp->w,&wstr[2],10);
-	itoa((int)temp->h,&hstr[2],10);
+	
+		if(temp == NULL) return;
+		char xstr[10] = {'x',':'};
+		char ystr[10] = {'y',':'};
+		char wstr[10] = {'w',':'};
+		char hstr[10] = {'h',':'};
+		itoa((int)temp->xmin,&xstr[2],10);
+		itoa((int)temp->ymin,&ystr[2],10);
+		itoa((int)temp->w,&wstr[2],10);
+		itoa((int)temp->h,&hstr[2],10);
 
-	rightMiddle[1].setColorInside(temp->colorInside[0],temp->colorInside[1],temp->colorInside[2]);
-	rightMiddle[3].setColorInside(temp->colorBorder[0],temp->colorBorder[1],temp->colorBorder[2]);
-	rightMiddle[8].setText(xstr);
-	rightMiddle[9].setText(ystr);
-	rightMiddle[10].setText(wstr);
-	rightMiddle[11].setText(hstr);
+		rightMiddle[1].setColorInside(temp->colorInside[0],temp->colorInside[1],temp->colorInside[2]);
+		rightMiddle[3].setColorInside(temp->colorBorder[0],temp->colorBorder[1],temp->colorBorder[2]);
+		rightMiddle[8].setText(xstr);
+		rightMiddle[9].setText(ystr);
+		rightMiddle[10].setText(wstr);
+		rightMiddle[11].setText(hstr);
+		if(temp->tex){
+			rightMiddle[5].setTexImage(temp->tex_dir);
+			rightMiddle[5].setTex(1);
+		}
+		else rightMiddle[5].setTex(0);
+	}
 }

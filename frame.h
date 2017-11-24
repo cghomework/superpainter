@@ -12,12 +12,12 @@ button colorFrame,colorSecond,colorCurrent,word;
 */
 
 #define MAINBLOCK 		5		// 主框架数目
-#define LEFTTOP 		5		// 左上组按钮数
+#define LEFTTOP 		4		// 左上组按钮数
 #define LEFTBOTTOM 		8		// 左下组按钮数
 #define RIGHTTOP 		4		// 右上组按钮数
 #define RIGHTMIDDLE 	12		// 右中组按钮数
-#define RIGHTBOTTOM 	2		// 右下组按钮数
-#define SLIP			4		// 滑动按钮组件
+#define RIGHTBOTTOM 	0		// 右下组按钮数
+#define SLIP			3		// 滑动按钮组件
 button mainBlock[MAINBLOCK];
 button leftTop[LEFTTOP];
 button leftBottom[LEFTBOTTOM];
@@ -40,7 +40,7 @@ void initFrame(){
 	int rightButtonw = 130;			// 右边一般按钮宽
 	int rightButtonh = 20;			// 右边一般按钮高
 	int leftBottomy = wh - 480;	// 左边整体高度定位
-	int rightBottomy = wh - 420;// 右边整体高度定位
+	int rightBottomy = wh - 480;// 右边整体高度定位
 
 /*
 	//主板块
@@ -70,9 +70,9 @@ void initFrame(){
 	}
 	leftTop[0].setTexImage("img\\open.bmp");
 	leftTop[1].setTexImage("img\\create.bmp");
-	leftTop[2].setTexImage("img\\set.bmp");
-	leftTop[3].setTexImage("img\\save.bmp");
-	leftTop[4].setTexImage("img\\saveas.bmp");
+	//leftTop[2].setTexImage("img\\set.bmp");
+	leftTop[2].setTexImage("img\\save.bmp");
+	leftTop[3].setTexImage("img\\saveas.bmp");
 		
 	//左下组按钮
 	for(int i = 0 ; i < LEFTBOTTOM ; i++){
@@ -111,7 +111,12 @@ void initFrame(){
 		rightMiddle[i].setColorInside(blockColor2[0], blockColor2[1], blockColor2[2], blockColor2[3]);
 	}
 	rightMiddle[0].setText("filled:");
+	rightMiddle[1].setColorInside(1,1,1,1);
+	rightMiddle[1].setColorBorder(0.2,0.2,0.2,1);
+	rightMiddle[1].setBorder();
 	rightMiddle[2].setText("border:");
+	rightMiddle[3].setColorInside(0,0,0,1);
+	rightMiddle[3].setColorBorder(0.2,0.2,0.2,1);
 	rightMiddle[4].setText("texure:");
 	rightMiddle[6].setText("trans:");
 	rightMiddle[7].setSize((rightButtonw - margin) / 2, 6);
@@ -120,6 +125,7 @@ void initFrame(){
 	rightMiddle[7].setColorInside(0.6, 0.6, 0.6, 1);
 
 	//右下组件
+	/*
 	rightBottom[0].setSize((rightButtonw - margin) / 2, rightButtonh);
 	rightBottom[0].setPosition(ww - border - margin * 2 - rightButtonw + margin, 
 			rightBottomy + ((RIGHTBOTTOM - 2) / 2  + 1) * margin + ((RIGHTBOTTOM - 2) / 2) * rightButtonh);
@@ -130,6 +136,7 @@ void initFrame(){
 	rightBottom[1].setPosition(ww - border - margin * 2 - rightButtonw + margin * 2 + (rightButtonw - margin)/ 2, 
 			rightBottomy + ((RIGHTBOTTOM - 2) / 2  + 1) * margin + ((RIGHTBOTTOM - 2) / 2) * rightButtonh + rightButtonh/2 - 3);
 	rightBottom[1].setColorInside(0.6, 0.6, 0.6, 1);
+	*/
 
 	//滑动按钮
 	slip[0].setSize(7,7);
@@ -138,8 +145,8 @@ void initFrame(){
 	slip[1].setPosition(rightTop[1].x + rightTop[1].w/2 - 2, rightTop[1].y);
 	slip[2].setSize(5,rightButtonh);
 	slip[2].setPosition(rightMiddle[7].x - 2, rightMiddle[7].y - rightButtonh / 2 + 2);
-	slip[3].setSize(5,rightButtonh);
-	slip[3].setPosition(rightBottom[1].x - 2, rightBottom[1].y - rightButtonh / 2 + 2);
+	//slip[3].setSize(5,rightButtonh);
+	//slip[3].setPosition(rightBottom[1].x - 2, rightBottom[1].y - rightButtonh / 2 + 2);
 	for(int i = 0;i<SLIP;i++){
 		slip[i].setColorInside(1, 1, 1, 1);
 		slip[i].setBorder(1);
@@ -246,13 +253,13 @@ void showColorBlock2(){
 
 void showFrame(){
 //	showChoosed();
-	for(int i = 2 ; i< 5;i++) mainBlock[i].show();
+	for(int i = 2 ; i< 4;i++) mainBlock[i].show();
 
 	for(int i  = 0 ; i < LEFTTOP; i++) leftTop[i].show();
 	for(int i  = 0 ; i < LEFTBOTTOM; i++) leftBottom[i].show();
 	for(int i  = 0 ; i < RIGHTTOP; i++) rightTop[i].show();
 	for(int i  = 0 ; i < RIGHTMIDDLE; i++) rightMiddle[i].show();
-	for(int i  = 0 ; i < RIGHTBOTTOM; i++) rightBottom[i].show();
+	//for(int i  = 0 ; i < RIGHTBOTTOM; i++) rightBottom[i].show();
 	showColorBlock();
 	showColorBlock2();
 	for(int i  = 0 ; i < SLIP; i++) slip[i].show();

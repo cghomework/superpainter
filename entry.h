@@ -9,6 +9,10 @@ struct vertice_node{
 		right = left = next = NULL;
 	}
 };
+
+
+
+
 class entry_node{
 		enum type{
 			LINE,
@@ -23,14 +27,14 @@ class entry_node{
 			glPushName(insideNameId);
 			glBindTexture(GL_TEXTURE_2D, _tex);  
 			glBegin(GL_QUADS);
-				glTexCoord2f(0.0f, 0.0f);
-				glVertex2f(x,y);
-				glTexCoord2f(1.0f, 0.0f);
-				glVertex2f(x+w,y);
-				glTexCoord2f(1.0f, 1.0f);
-				glVertex2f(x+w,y+h);
-				glTexCoord2f(0.0f, 1.0f);
-				glVertex2f(x,y+h);
+				glTexCoord2d(0.0f, 0.0f);
+				glVertex2d(xmin,ymin);
+				glTexCoord2d(1.0f, 0.0f);
+				glVertex2d(xmin+w,ymin);
+				glTexCoord2d(1.0f, 1.0f);
+				glVertex2d(xmin+w,ymin+h);
+				glTexCoord2d(0.0f, 1.0f);
+				glVertex2d(xmin,ymin+h);
 			glEnd();
 			glPopName();
 			glPopMatrix();
@@ -74,25 +78,47 @@ class entry_node{
 		void showPoint(){
 			glPushName(borderNameId);
 			setColor(colorBorder);
-			glBegin(GL_POINTS);
-				glVertex2d(vhead->next->x,vhead->next->y);
-			glEnd();
+				glBegin(GL_POINTS);
+					glVertex2d(vhead->next->x,vhead->next->y);
+				glEnd();
 			glPopName();
 		}
 		void showInside(){
+			glPushAttrib(GL_ALL_ATTRIB_BITS);
+			glPushMatrix();
 			glPushName(insideNameId);
+		 	GLUtesselator* m_pTess;
+		    m_pTess = gluNewTess();
+		    gluTessCallback(m_pTess, GLU_TESS_BEGIN, (void (CALLBACK *)())glBegin);//这句出错
+		    gluTessCallback(m_pTess, GLU_TESS_VERTEX, (void (CALLBACK *)())glVertex3dv);//这句出错
+		    gluTessCallback(m_pTess, GLU_END, (void (CALLBACK *)())glEnd);//这句没问题（怪了）
+			gluTessBeginPolygon(m_pTess,NULL);
+			gluTessBeginContour(m_pTess);
 			setColor(colorInside);
-			glBegin(GL_POLYGON);
-				vertice_node *temp2 = vhead;
-				while(temp2->next!=NULL){
-					glVertex2d(temp2->next->x,temp2->next->y);
-					temp2 = temp2->next;
-				}
-			glEnd();
+			GLdouble quad[nvertices][3];
+			vertice_node *temp2 = vhead;
+			int i = 0;
+			while(temp2->next!=NULL){
+				quad[i][0] = temp2->next->x;
+				quad[i][1] = temp2->next->y;
+				quad[i][2] = 0;
+				gluTessVertex(m_pTess, quad[i], quad[i]);
+				temp2 = temp2->next;
+				i++;
+			}
+			gluTessEndContour(m_pTess);
+			gluTessEndPolygon(m_pTess);
+			gluDeleteTess(m_pTess);
 			glPopName();
+			glPopMatrix();
+			glPopAttrib();
 		}
 		void showCircle(){
 			if(solid){
+
+				if(tex) showTex();
+				else{
+				refreshmaxmin();
 				glPushName(insideNameId);
 			    setColor(colorInside); 
 			    glBegin(GL_POLYGON);
@@ -111,7 +137,15 @@ class entry_node{
 						    double a2 = pow((1-t),2)*3*t;  
 						    double a3 = 3*t*t*(1-t);  
 						    double a4 = t*t*t;
-						    glVertex2d(p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4, p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4);
+						    double x_temp = p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4;
+						    double y_temp = p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4;
+							if(x_temp<xmin) xmin = x_temp;
+							if(x_temp>xmax) xmax = x_temp;
+							if(y_temp<ymin) ymin = y_temp;
+							if(y_temp>ymax) ymax = y_temp;
+							w = abs(xmax - xmin);
+							h = abs(ymax - ymin);
+						    glVertex2d(x_temp, y_temp);
 				    	}
 				    	temp = temp->next;
 			    	}
@@ -128,12 +162,22 @@ class entry_node{
 					    double a2 = pow((1-t),2)*3*t;  
 					    double a3 = 3*t*t*(1-t);  
 					    double a4 = t*t*t;
-					    glVertex2d(p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4, p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4);
+					    double x_temp = p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4;
+					    double y_temp = p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4;
+					    if(x_temp<xmin) xmin = x_temp;
+						if(x_temp>xmax) xmax = x_temp;
+						if(y_temp<ymin) ymin = y_temp;
+						if(y_temp>ymax) ymax = y_temp;
+						w = abs(xmax - xmin);
+						h = abs(ymax - ymin);
+					    glVertex2d(x_temp, y_temp);
 			    	}
 			    glEnd();
 				glPopName();
+				}
 			}
 			if(border){
+				refreshmaxmin();
 				glPushName(borderNameId);
 			    setColor(colorBorder);  
 				glLineWidth(width);
@@ -153,7 +197,15 @@ class entry_node{
 						    double a2 = pow((1-t),2)*3*t;  
 						    double a3 = 3*t*t*(1-t);  
 						    double a4 = t*t*t;
-						    glVertex2d(p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4, p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4);
+						    double x_temp = p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4;
+						    double y_temp = p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4;
+							if(x_temp<xmin) xmin = x_temp;
+							if(x_temp>xmax) xmax = x_temp;
+							if(y_temp<ymin) ymin = y_temp;
+							if(y_temp>ymax) ymax = y_temp;
+							w = abs(xmax - xmin);
+							h = abs(ymax - ymin);
+						    glVertex2d(x_temp, y_temp);
 				    	}
 				    	temp = temp->next;
 			    	}
@@ -170,7 +222,15 @@ class entry_node{
 					    double a2 = pow((1-t),2)*3*t;  
 					    double a3 = 3*t*t*(1-t);  
 					    double a4 = t*t*t;
-					    glVertex2d(p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4, p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4);
+					    double x_temp = p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4;
+					    double y_temp = p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4;
+						if(x_temp<xmin) xmin = x_temp;
+						if(x_temp>xmax) xmax = x_temp;
+						if(y_temp<ymin) ymin = y_temp;
+						if(y_temp>ymax) ymax = y_temp;
+						w = abs(xmax - xmin);
+						h = abs(ymax - ymin);
+					    glVertex2d(x_temp, y_temp);
 			    	}
 			    glEnd();
 				glPopName();
@@ -178,6 +238,7 @@ class entry_node{
 		}
 		void showCurve(){
 		    if(border){
+		    	refreshmaxmin();
 				glPushName(borderNameId);
 			    setColor(colorBorder);  
 				glLineWidth(width);
@@ -197,7 +258,15 @@ class entry_node{
 						    double a2 = pow((1-t),2)*3*t;  
 						    double a3 = 3*t*t*(1-t);  
 						    double a4 = t*t*t;
-						    glVertex2d(p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4, p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4);
+						    double x_temp = p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4;
+						    double y_temp = p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4;
+							if(x_temp<xmin) xmin = x_temp;
+							if(x_temp>xmax) xmax = x_temp;
+							if(y_temp<ymin) ymin = y_temp;
+							if(y_temp>ymax) ymax = y_temp;
+							w = abs(xmax - xmin);
+							h = abs(ymax - ymin);
+						    glVertex2d(x_temp, y_temp);
 				    	}
 				    	temp = temp->next;
 			    	}
@@ -209,6 +278,7 @@ class entry_node{
 			glPushName(1);
 			// 1000100010001000
 			glLineStipple(1, 0x8888);
+			glColor4d(0,0,0,1);
 			glBegin(GL_LINE_STRIP & GL_LINE_LOOP);
 				glVertex2d(xmin-1,ymin-1);
 				glVertex2d(xmin-1,ymax+1);
@@ -219,16 +289,40 @@ class entry_node{
 			glLineStipple(1, 0xFFFF);
 		}
 		void showPoints(){
+			glPushName(1);
 			vertice_node *temp = vhead->next;
 			while(temp!=NULL){
-				glBegin(GL_LINE_STRIP & GL_LINE_LOOP);
+				glColor4d(0,0,0,1);
+				if(_type == CURVE || _type == CIRCLE){
+					glLineStipple(1, 0x8888);
+					glBegin(GL_LINE_STRIP);
+						glVertex2d(temp->left->x,temp->left->y);
+						glVertex2d(temp->x,temp->y);
+						glVertex2d(temp->right->x,temp->right->y);
+					glEnd();
+					glLineStipple(1, 0xFFFF);
+				}
+				glBegin(GL_POLYGON);
+					glVertex2d(temp->left->x-2,temp->left->y-2);
+					glVertex2d(temp->left->x-2,temp->left->y+2);
+					glVertex2d(temp->left->x+2,temp->left->y+2);
+					glVertex2d(temp->left->x+2,temp->left->y-2);
+				glEnd();
+				glBegin(GL_POLYGON);
 					glVertex2d(temp->x-2,temp->y-2);
 					glVertex2d(temp->x-2,temp->y+2);
 					glVertex2d(temp->x+2,temp->y+2);
 					glVertex2d(temp->x+2,temp->y-2);
 				glEnd();
+				glBegin(GL_POLYGON);
+					glVertex2d(temp->right->x-2,temp->right->y-2);
+					glVertex2d(temp->right->x-2,temp->right->y+2);
+					glVertex2d(temp->right->x+2,temp->right->y+2);
+					glVertex2d(temp->right->x+2,temp->right->y-2);
+				glEnd();
 				temp = temp->next;
 			}
+			glPopName();
 		}
 		// 函数power_of_two用于判断一个整数是不是2的整数次幂    
 		int power_of_two(int n){    
@@ -339,7 +433,9 @@ class entry_node{
 			else if(_type == CURVE) showCurve();
 			else{
 				if(solid && (_type == POLYGON ||  _type == SQUARE)){
-					if(tex) showTex();
+					if(tex){
+						showTex();
+					}
 					else showInside();
 					if(border){
 						showBorder();
@@ -391,6 +487,10 @@ class entry_node{
 			glPopAttrib();
 		}
 		int setTexImage(const char* file_name){
+			if(file_name == NULL){
+				tex_dir = NULL;
+				return 0;
+			}
 			tex_dir = new char[strlen(file_name)];
 			strcpy(tex_dir, file_name);
 			GLint width, height, total_bytes;    
@@ -524,28 +624,36 @@ class entry_node{
 			vtail->next = temp;
 			vtail = vtail->next;
 			nvertices++;
-			if(_x<xmin) xmin = _x;
-			if(_x>xmax) xmax = _x;
-			if(_y<ymin) ymin = _y;
-			if(_y>ymax) ymax = _y;
-			w = abs(xmax - xmin);
-			h = abs(ymax - ymin);
+			refreshmaxmin();
 		}
 		void movePoint(double _x, double _y,double newx, double newy){
 			double dx = newx - _x;
 			double dy = newy - _y;
 			vertice_node * temp = vhead->next;
+			int c = 0;
 			while(temp!=NULL){
 				if(temp->x < _x+5 && temp->x > _x -5 && temp->y < _y + 5 && temp->y > _y -5 ) break;
+				if(temp->left->x < _x+5 && temp->left->x > _x -5 && temp->left->y < _y + 5 && temp->left->y > _y -5 ){
+					c = 1;
+					temp = temp->left;
+					break;
+				}
+				if(temp->right->x < _x+5 && temp->right->x > _x -5 && temp->right->y < _y + 5 && temp->right->y > _y -5 ){
+					c = 1;
+					temp = temp->right;
+					break;
+				}
 				temp = temp->next;
 			}
 			if(temp == NULL) return;
 			temp->x += dx;
 			temp->y += dy;
-			temp->left->x += dx;
-			temp->left->y += dy;
-			temp->right->x += dx;
-			temp->right->y += dy;
+			if(c!=1){
+				temp->left->x += dx;
+				temp->left->y += dy;
+				temp->right->x += dx;
+				temp->right->y += dy;
+			}
 			refreshmaxmin();
 		}
 		void refreshmaxmin(){
@@ -747,9 +855,17 @@ class entry_node{
 			colorText[2] = status_double[18];
 			colorText[3] = status_double[19];
 
-			if(tex_[0] != 'n') setTexImage(tex_);
-			if(text[0] != 'n') setText(text);
-
+			char temp[100];
+			if(tex_[0] != 'n'){
+				strcpy(temp,tex_);
+				temp[strlen(temp)-1] = '\0';
+				setTexImage(temp);
+			} 
+			if(text[0] != 'n'){
+				strcpy(temp,text);
+				temp[strlen(temp)-1] = '\0';
+				setText(temp);
+			}
 			//nvertices = no_of_vertices;
 			int innerindex = 0;
 			//vertice_node * temp = vhead->next;
@@ -773,7 +889,7 @@ class polygons{
 		entry_node * ptail;
 		polygons():size(0){
 			phead = new entry_node;
-			ptail = phead;
+			ptail = phead ;
 		}
 
 		void newOne(){
