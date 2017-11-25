@@ -7,6 +7,7 @@
 #include <math.h>
 #include <string.h>
 
+
 int ww = 1000;		//窗口宽
 int wh = 600;		//窗口高
 
@@ -83,6 +84,10 @@ void myMenu(int id){
 
 //定义窗口大小改变的时候，内部元件的改变形式
 void myReashape(GLsizei w, GLsizei h){
+	
+	HWND hWnd= GetForegroundWindow();    //获取当前的前置窗口
+	HANDLE hIcon = LoadImage(NULL,"icon.ico",IMAGE_ICON,NULL,NULL,LR_LOADFROMFILE);
+	SendMessage(hWnd,WM_SETICON,(WPARAM)ICON_SMALL/*or ICON_BIG*/,(LPARAM) hIcon);
 	//重置投影
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -112,7 +117,6 @@ void mydisplay(){
 }
 
 int main(int argc, char* argv[]){
-
 	HWND hWnd= GetForegroundWindow();    //获取当前的前置窗口
 	ShowWindow(hWnd, SW_HIDE);        //隐藏了获取的窗口.
 	
@@ -120,13 +124,14 @@ int main(int argc, char* argv[]){
 	glutInitWindowPosition(250,100);
 	glutInitWindowSize(ww,wh);
 	glutCreateWindow("superPainter");
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //指定混合函数  
 
 	glutReshapeFunc(myReashape);
 	glutMouseFunc(myMouse);
 	glutPassiveMotionFunc(myPassiveMotion);
 	glutMotionFunc(myMotion);
-	
+
 	//menu
 	glutCreateMenu(myMenu);
 	glutAddMenuEntry("up",1);
@@ -144,6 +149,7 @@ int main(int argc, char* argv[]){
     glEnable(GL_BLEND);     //启用混合状态  
 	glEnable(GL_TEXTURE_2D);
 	glClearColor(1.0,1.0,1.0,1.0);
+
 	glutMainLoop();
 	if(opened_file!=NULL) delete opened_file;
 }
