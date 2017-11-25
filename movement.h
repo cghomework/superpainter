@@ -7,8 +7,8 @@ int choosingColor = 0;
 char * tex_buff = NULL;
 
 int leftMouse = 0;
-int oldx,oldy;
-int newx,newy;
+double oldx,oldy;
+double newx,newy;
 
 int drawing = 0;
 int choosedType = 0;
@@ -18,6 +18,8 @@ int slipping = 0;
 int changingpoints = 0;
 int movingpoint = 0;
 int buttonin = 0;
+int spinning = 0;
+int movingcanvas = 0;
 
 void saveEntry(int);
 void loadEntry();
@@ -28,8 +30,13 @@ void clearblick();
 void refreshStatus();
 void chooseTex();
 
+
 //检查鼠标进入按钮
 void checkInButton(int x, int y){
+
+	x = x*standard - (standard - 1) * ww / 2;
+	y = y*standard - (standard - 1) * wh / 2;
+
 	for(int i = 0 ; i < LEFTTOP ;i++){
 		if(x>leftTop[i].x && x<leftTop[i].x+leftTop[i].w && y>leftTop[i].y && y<leftTop[i].y+leftTop[i].h){
 			leftTop[i].mouseHover();
@@ -171,6 +178,8 @@ void checkInButton(int x, int y){
 
 //检查鼠标按键
 int checkPressButton(int x, int y){
+	x = x*standard - (standard - 1) * ww / 2;
+	y = y*standard - (standard - 1) * wh / 2;
 	for(int i = 0 ;i < 5;i++){
 		if(leftBottom[i].mouseIn){
 			choosedType = i;
@@ -270,17 +279,20 @@ int checkPressButton(int x, int y){
 		else if(i == 2 && x>=rightMiddle[3].x  && x <=rightMiddle[3].x+ rightMiddle[3].w) slip[i].setPosition(x-2,slip[i].y);
 		else if(i == 3 && x>=rightBottom[1].x  && x <=rightBottom[1].x+ rightBottom[1].w) slip[i].setPosition(x-2,slip[i].y);
 
+		double r = 0;
+		double g = 0;
+		double b = 0;
+
 		//更新相联板块
 		if(i == 0){
-			double r = 0;
-			double g = 0;
-			double b = 0;
 			double dx = (double)(x - rightTop[0].x)/(double)rightTop[0].w;
 			double dy = -(double)(2*y - 2* rightTop[0].y - rightTop[0].h)/(double)rightTop[0].h;
+
 			if(dx>1) dx = 1;
 			else if(dx<0) dx = 0;
 			if(dy>1) dy = 1;
 			else if(dy<-1) dy = -1;
+
 			if(dx < 1.0/6.0){
 				r = 1;
 				g = dx * 6;
@@ -305,6 +317,7 @@ int checkPressButton(int x, int y){
 				b = 1 - (dx-5.0/6.0) *6;
 				r = 1;
 			}
+
 			if(dy < 0){
 				r += r * dy;
 				g += g * dy;
@@ -315,26 +328,14 @@ int checkPressButton(int x, int y){
 				g += (1-g) * dy;
 				b += (1-b) * dy;
 			}
+
+
 			rightTop[1].setColorInside(r,g,b);
 			rightTop[3].setColorInside(r,g,b);
 			slip[1].setPosition(rightTop[1].x + rightTop[1].w/2 - 2, rightTop[1].y);
-
-			if(choosingColor == 0){
-				colorInside_buff[0] = r;
-				colorInside_buff[1] = g;
-				colorInside_buff[2] = b;
-				rightMiddle[1].setColorInside(r,g,b);
-			}
-			else{
-				colorBorder_buff[0] = r;
-				colorBorder_buff[1] = g;
-				colorBorder_buff[2] = b;
-				rightMiddle[3].setColorInside(r,g,b);
-			}
 		}
 		if(i == 1){
 			double dx = -(double)(2* x - 2*rightTop[1].x - rightTop[1].w)/(double)rightTop[1].w;
-			double r,g,b;
 			r = rightTop[1].colorInside[0];
 			g = rightTop[1].colorInside[1];
 			b = rightTop[1].colorInside[2];
@@ -349,21 +350,60 @@ int checkPressButton(int x, int y){
 				b += (1-b) * dx;
 			}
 			rightTop[3].setColorInside(r,g,b);
-
+		}
+		if(i == 2){
 			if(choosingColor == 0){
-				colorInside_buff[0] = r;
-				colorInside_buff[1] = g;
-				colorInside_buff[2] = b;
-				rightMiddle[1].setColorInside(r,g,b);
+				r = rightMiddle[1].colorInside[0];
+				g = rightMiddle[1].colorInside[1];
+				b = rightMiddle[1].colorInside[2];
 			}
 			else{
-				colorBorder_buff[0] = r;
-				colorBorder_buff[1] = g;
-				colorBorder_buff[2] = b;
-				rightMiddle[3].setColorInside(r,g,b);
+				r = rightMiddle[3].colorInside[0];
+				g = rightMiddle[3].colorInside[1];
+				b = rightMiddle[3].colorInside[2];
 			}
+			trans= 1 - (double)(x - rightMiddle[3].x)/(double)rightMiddle[3].w;
 		}
-
+		if(i == 3){
+			if(choosingColor == 0){
+				r = rightMiddle[1].colorInside[0];
+				g = rightMiddle[1].colorInside[1];
+				b = rightMiddle[1].colorInside[2];
+			}
+			else{
+				r = rightMiddle[3].colorInside[0];
+				g = rightMiddle[3].colorInside[1];
+				b = rightMiddle[3].colorInside[2];
+			}
+			double _standard = (slip[3].x - rightBottom[1].x + 2)/ ((double)rightBottom[1].w/2);
+			if(_standard < 2 && _standard > 0)
+				standard = _standard;
+		}
+		if(choosingColor == 0){
+			colorInside_buff[0] = r;
+			colorInside_buff[1] = g;
+			colorInside_buff[2] = b;
+			rightMiddle[1].setColorInside(r,g,b);
+		}
+		else{
+			colorBorder_buff[0] = r;
+			colorBorder_buff[1] = g;
+			colorBorder_buff[2] = b;
+			rightMiddle[3].setColorInside(r,g,b);
+		}
+		if(picking){
+			entry_node * temp = entryList.phead->next;
+			while(temp!=NULL){
+				if(temp->picked == 1){
+					if(choosingColor == 0) temp->setColorInside(r,g,b,trans);
+					else temp->setColorBorder(r,g,b,trans);
+					break;
+				}
+				temp = temp->next;
+		}
+		refreshStatus();
+		glutPostRedisplay();
+		}
 		glutPostRedisplay();
 		return 1;
 	}
@@ -397,6 +437,8 @@ void clearblick(){
 }
 
 void checkPressEntry(int x, int y){
+	x = x*standard - (standard - 1) * ww / 2;
+	y = y*standard - (standard - 1) * wh / 2;
 	GLuint selectBuff[1000]={0};//创建一个保存选择结果的数组    
 	GLint hits, viewport[4];      
 
@@ -711,10 +753,37 @@ void newColor(){
 	}
 }
 
-
 //鼠标按键事件
 void myMouse(int button, int state, int x, int y){
 	y = wh-y;
+	x = x/standard  + ((standard - 1) / standard) * ww / 2;
+	y = y/standard  + ((standard - 1) / standard) * wh / 2;
+	int mod = glutGetModifiers();
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && picking && (mod & GLUT_ACTIVE_CTRL)){
+		oldx = x;
+		oldy = y;
+		spinning = 1;
+		return;
+	}
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && (mod & GLUT_ACTIVE_ALT)){
+		oldx = x;
+		oldy = y;
+		movingcanvas = 1;
+		return;
+	}
+
+	if(button ==  GLUT_WHEEL_UP){
+		standard *= 1.1;
+		if(standard >= 0 && standard <= 2)
+			slip[3].setPosition(rightBottom[1].x + (rightBottom[1].w / 2) * standard - 2, slip[3].y);
+		glutPostRedisplay();
+	}
+	if(button ==  GLUT_WHEEL_DOWN){
+		standard *= 0.9;
+		if(standard >= 0 && standard <= 2)
+			slip[3].setPosition(rightBottom[1].x + (rightBottom[1].w / 2) * standard - 2, slip[3].y);
+		glutPostRedisplay();
+	}
 	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
 		if(checkPressButton(x,y) == 1){
 			return;
@@ -737,7 +806,7 @@ void myMouse(int button, int state, int x, int y){
 			drawing = 1;
 			entryList.newOne();
 			entryList.ptail->setType(choosedType);
-			entryList.ptail->addPoint(x,y);
+			entryList.ptail->addPoint(x + xtrans,y+ytrans);
 			entryList.ptail->setColorInside(colorInside_buff[0],colorInside_buff[1],colorInside_buff[2]);
 			entryList.ptail->setColorBorder(colorBorder_buff[0],colorBorder_buff[1],colorBorder_buff[2]);
 			refreshStatus();
@@ -751,6 +820,7 @@ void myMouse(int button, int state, int x, int y){
 		entryList.ptail->addPoint(x,y);
 		entryList.ptail->addPoint(x,y);
 		entryList.ptail->addPoint(x,y);
+
 		vertice_node * temp1 = entryList.ptail->vhead->next;
 		vertice_node * temp1l = temp1->left;
 		vertice_node * temp1r = temp1->right;
@@ -768,6 +838,7 @@ void myMouse(int button, int state, int x, int y){
 		vertice_node * temp4r = temp4->right;
 
 		double c = 0.551915024494;
+
 
 		temp3->x = temp1->x = entryList.ptail->xmin + entryList.ptail->w/2;
 		temp2l->x = temp2r->x = temp2->x = entryList.ptail->xmax;
@@ -802,11 +873,19 @@ void myMouse(int button, int state, int x, int y){
 	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP && changingpoints == 1){
 		changingpoints = 0;
 	}
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP && spinning == 1){
+		spinning = 0;
+	}
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP && movingcanvas == 1){
+		movingcanvas = 0;
+	}
 }
 
 //鼠标一般移动事件
 void myPassiveMotion(int x, int y){
 	y = wh -y;
+	x = x/standard  + ((standard - 1) / standard) * ww / 2;
+	y = y/standard  + ((standard - 1) / standard) * wh / 2;
 	checkInButton(x,y);
 	if(drawing){
 		if(entryList.ptail->nvertices!=0){
@@ -821,7 +900,21 @@ void myPassiveMotion(int x, int y){
 void myMotion(int x,int y){
 	leftMouse =1;
 	y = wh -y;
-	if(drawing){
+	x = x/standard  + ((standard - 1) / standard) * ww / 2;
+	y = y/standard  + ((standard - 1) / standard) * wh / 2;
+	if(movingcanvas){
+		entry_node * temp = entryList.phead->next;
+		while(temp!=NULL){
+			temp->movePoints(oldx,oldy,x,y);
+			temp = temp->next;
+		}
+		//xtrans += x - oldx;
+		//ytrans += y - oldy;
+		oldy = y;
+		oldx = x;
+		glutPostRedisplay();
+	}
+	else if(drawing){
 		if(choosedType == 1 && entryList.ptail->nvertices>1){
 			entryList.ptail->vtail->left->x = 2 * entryList.ptail->vtail->x - x;
 			entryList.ptail->vtail->left->y = 2 * entryList.ptail->vtail->y - y;
@@ -840,6 +933,8 @@ void myMotion(int x,int y){
 		}
 	}
 	else if(slipping){
+		x = x*standard  - (standard - 1) * ww / 2;
+		y = y*standard  - (standard - 1) * wh / 2;
 		int i  = 0;
 		if(rightTop[0].mouseIn) i = 0;
 		if(rightTop[1].mouseIn) i = 1;
@@ -925,7 +1020,32 @@ void myMotion(int x,int y){
 			rightTop[3].setColorInside(r,g,b);
 		}
 		if(i == 2){
+			if(choosingColor == 0){
+				r = rightMiddle[1].colorInside[0];
+				g = rightMiddle[1].colorInside[1];
+				b = rightMiddle[1].colorInside[2];
+			}
+			else{
+				r = rightMiddle[3].colorInside[0];
+				g = rightMiddle[3].colorInside[1];
+				b = rightMiddle[3].colorInside[2];
+			}
 			trans= 1 - (double)(x - rightMiddle[3].x)/(double)rightMiddle[3].w;
+		}
+		if(i == 3){
+			if(choosingColor == 0){
+				r = rightMiddle[1].colorInside[0];
+				g = rightMiddle[1].colorInside[1];
+				b = rightMiddle[1].colorInside[2];
+			}
+			else{
+				r = rightMiddle[3].colorInside[0];
+				g = rightMiddle[3].colorInside[1];
+				b = rightMiddle[3].colorInside[2];
+			}
+			double _standard = (slip[3].x - rightBottom[1].x + 2)/ ((double)rightBottom[1].w/2);
+			if(_standard < 2 && _standard > 0)
+				standard = _standard;
 		}
 		if(choosingColor == 0){
 			colorInside_buff[0] = r;
@@ -961,10 +1081,18 @@ void myMotion(int x,int y){
 		entry_node * temp = entryList.phead->next;
 		while(temp!=NULL){
 			if(temp->picked == 1){
-				if(changingpoints) temp->changePoints(oldx,oldy,x,y);
+				if(spinning){
+					double theta;
+					double cx = temp->xmin + temp->w /2;
+					double cy = temp->ymin + temp->h /2;
+					theta = (acos((x - cx)/sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy))) - acos((oldx - cx)/sqrt((oldx-cx)*(oldx-cx)+(oldy-cy)*(oldy-cy))));
+					if(y - cy < 0) theta = -theta;
+					temp->spin(theta);
+				}
+				else if(changingpoints) temp->changePoints(oldx,oldy,x,y);
 				else temp->movePoints(oldx,oldy,x,y);
-				oldx = x;
 				oldy = y;
+				oldx = x;
 
 				break;
 			}
@@ -1001,7 +1129,7 @@ void showMoving(){
 			    glBegin(GL_POLYGON);  
 			    for(int i=0;i<n;i++)  
 			    {  
-			        glVertex2d(abs(newx - entryList.ptail->vtail->x)/2*cos(2*3.1415926*i/n) + xmin + abs(newx - entryList.ptail->vtail->x)/2,abs(newy - entryList.ptail->vtail->y)/2*sin(2*3.1415926*i/n) + ymin + abs(newy - entryList.ptail->vtail->y)/2);
+			        glVertex2d((abs(newx - entryList.ptail->vtail->x)/2*cos(2*3.1415926*i/n) + xmin + abs(newx - entryList.ptail->vtail->x)/2)*standard - (standard - 1) * ww / 2,(abs(newy - entryList.ptail->vtail->y)/2*sin(2*3.1415926*i/n) + ymin + abs(newy - entryList.ptail->vtail->y)/2)*standard - (standard - 1) * wh/ 2);
 			    }  
 			    glEnd(); 
 			}
@@ -1009,7 +1137,7 @@ void showMoving(){
 		    glBegin(GL_LINE_STRIP & GL_LINE_LOOP);  
 		    for(int i=0;i<n;i++)  
 		    {  
-		        glVertex2d(abs(newx - entryList.ptail->vtail->x)/2*cos(2*3.1415926*i/n) + xmin + abs(newx - entryList.ptail->vtail->x)/2,abs(newy - entryList.ptail->vtail->y)/2*sin(2*3.1415926*i/n) + ymin + abs(newy - entryList.ptail->vtail->y)/2);
+		        glVertex2d((abs(newx - entryList.ptail->vtail->x)/2*cos(2*3.1415926*i/n) + xmin + abs(newx - entryList.ptail->vtail->x)/2)*standard - (standard - 1) * ww / 2,(abs(newy - entryList.ptail->vtail->y)/2*sin(2*3.1415926*i/n) + ymin + abs(newy - entryList.ptail->vtail->y)/2)*standard - (standard - 1) * wh / 2);
 		    }  
 		    glEnd(); 
 			glFlush();
@@ -1018,18 +1146,18 @@ void showMoving(){
 		    if(entryList.ptail->solid){
 		    	glColor4dv(entryList.ptail->colorInside);  
 			    glBegin(GL_POLYGON);
-			        glVertex2d(entryList.ptail->vtail->x, entryList.ptail->vtail->y);
-			        glVertex2d(entryList.ptail->vtail->x, newy);
-			        glVertex2d(newx, newy);
-			        glVertex2d(newx, entryList.ptail->vtail->y);
+			        glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2, entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
+			        glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2, newy*standard - (standard - 1) * wh / 2);
+			        glVertex2d(newx*standard - (standard - 1) * ww / 2, newy*standard - (standard - 1) * wh / 2);
+			        glVertex2d(newx*standard - (standard - 1) * ww / 2, entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
 			    glEnd(); 
 			}
 		    glColor4dv(entryList.ptail->colorBorder);  
 		    glBegin(GL_LINE_STRIP & GL_LINE_LOOP);  
-		        glVertex2d(entryList.ptail->vtail->x, entryList.ptail->vtail->y);
-		        glVertex2d(entryList.ptail->vtail->x, newy);
-		        glVertex2d(newx, newy);
-		        glVertex2d(newx, entryList.ptail->vtail->y);
+		        glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2, entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
+		        glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2, newy*standard - (standard - 1) * wh / 2);
+		        glVertex2d(newx*standard - (standard - 1) * ww / 2, newy*standard - (standard - 1) * wh / 2);
+		        glVertex2d(newx*standard - (standard - 1) * ww / 2, entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
 		    glEnd(); 
 			glFlush();
 		}
@@ -1037,9 +1165,9 @@ void showMoving(){
 			if(leftMouse){
 				glColor4d(0,0,0,1);
 				glBegin(GL_LINE_STRIP);
-					glVertex2d(entryList.ptail->vtail->left->x,entryList.ptail->vtail->left->y);
-					glVertex2d(entryList.ptail->vtail->x,entryList.ptail->vtail->y);
-					glVertex2d(newx,newy);
+					glVertex2d(entryList.ptail->vtail->left->x*standard - (standard - 1) * ww / 2,entryList.ptail->vtail->left->y*standard - (standard - 1) * wh / 2);
+					glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2,entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
+					glVertex2d(newx*standard - (standard - 1) * ww / 2,newy*standard - (standard - 1) * wh / 2);
 				glEnd();
 				glFlush();
 			}
@@ -1047,8 +1175,8 @@ void showMoving(){
 				glColor4dv(entryList.ptail->colorBorder);
 				glBegin(GL_LINES);
 					if(entryList.ptail->nvertices!=0){
-						glVertex2d(entryList.ptail->vtail->x,entryList.ptail->vtail->y);
-						glVertex2d(newx,newy);
+						glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2,entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
+						glVertex2d(newx*standard - (standard - 1) * ww / 2,newy*standard - (standard - 1) * wh / 2);
 					}
 				glEnd();
 				glFlush();
@@ -1058,8 +1186,8 @@ void showMoving(){
 			glColor4dv(entryList.ptail->colorBorder);
 			glBegin(GL_LINES);
 				if(entryList.ptail->nvertices!=0){
-					glVertex2d(entryList.ptail->vtail->x,entryList.ptail->vtail->y);
-					glVertex2d(newx,newy);
+					glVertex2d(entryList.ptail->vtail->x*standard - (standard - 1) * ww / 2,entryList.ptail->vtail->y*standard - (standard - 1) * wh / 2);
+					glVertex2d(newx*standard - (standard - 1) * ww / 2,newy*standard - (standard - 1) * wh / 2);
 				}
 			glEnd();
 			glFlush();

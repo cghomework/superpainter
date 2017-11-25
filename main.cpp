@@ -10,6 +10,14 @@
 int ww = 1000;		//窗口宽
 int wh = 600;		//窗口高
 
+double standard = 1;
+/*
+缩放矩阵;//
+[ x  ww/2 ] [rate  ] = [x']
+[ y  wh/2 ] [rate-1]   [y']
+*/
+double xtrans,ytrans;
+
 #include "button.h"		//按钮类
 #include "entry.h"		//图元类
 #include "frame.h"		//界面框架
@@ -71,7 +79,6 @@ void myMenu(int id){
 		}
 		temp = temp->next;
 	}
-
 }
 
 //定义窗口大小改变的时候，内部元件的改变形式
@@ -95,7 +102,6 @@ void myReashape(GLsizei w, GLsizei h){
 
 //主显示函数
 void mydisplay(){
-	
 	glClear(GL_COLOR_BUFFER_BIT);
 	entryList.showAll();
 	

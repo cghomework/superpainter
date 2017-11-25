@@ -10,9 +10,6 @@ struct vertice_node{
 	}
 };
 
-
-
-
 class entry_node{
 		enum type{
 			LINE,
@@ -28,13 +25,13 @@ class entry_node{
 			glBindTexture(GL_TEXTURE_2D, _tex);  
 			glBegin(GL_QUADS);
 				glTexCoord2d(0.0f, 0.0f);
-				glVertex2d(xmin,ymin);
+				glVertex2d(standard*(xmin+xtrans)- (standard - 1) * ww/2,standard*(ymin+ytrans) - (standard - 1) * wh/2);
 				glTexCoord2d(1.0f, 0.0f);
-				glVertex2d(xmin+w,ymin);
+				glVertex2d(standard*((xmin+xtrans)+w)- (standard - 1) * ww/2,standard*(ymin+ytrans) - (standard - 1) * wh/2);
 				glTexCoord2d(1.0f, 1.0f);
-				glVertex2d(xmin+w,ymin+h);
+				glVertex2d(standard*((xmin+xtrans)+w)- (standard - 1) * ww/2,standard*((ymin+ytrans)+h) - (standard - 1) * wh/2);
 				glTexCoord2d(0.0f, 1.0f);
-				glVertex2d(xmin,ymin+h);
+				glVertex2d(standard*(xmin+xtrans)- (standard - 1) * ww/2,standard*((ymin+ytrans)+h) - (standard - 1) * wh/2);
 			glEnd();
 			glPopName();
 			glPopMatrix();
@@ -42,7 +39,7 @@ class entry_node{
 		}
 		void showText(){
 			setColor(colorText);
-			glRasterPos2d(x+5, y+h-18); 
+			glRasterPos2d(standard*(x+xtrans+5)- (standard - 1) * ww/2, standard*((y+ytrans)+h-18) - (standard - 1) * wh/2); 
 			for(char *c=_text; *c != '\0'; c++) {  
 			    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *c);  
 			}  
@@ -54,10 +51,10 @@ class entry_node{
 			glBegin(GL_LINE_STRIP & GL_LINE_LOOP);
 				vertice_node *temp2 = vhead;
 				while(temp2->next!=NULL){
-					glVertex2d(temp2->next->x,temp2->next->y);
+					glVertex2d(standard*(temp2->next->x+xtrans)- (standard - 1) * ww/2,standard*(temp2->next->y + ytrans) - (standard - 1) * wh/2);
 					temp2 = temp2->next;
 				}
-				if(_type == POLYGON) glVertex2d(vhead->next->x,vhead->next->y);
+				if(_type == POLYGON) glVertex2d(standard*(vhead->next->x + xtrans)- (standard - 1) * ww/2,standard*(vhead->next->y + ytrans) - (standard - 1) * wh/2);
 			glEnd();
 			glPopName();
 		}
@@ -68,10 +65,10 @@ class entry_node{
 			glBegin(GL_LINE_STRIP);
 				vertice_node *temp2 = vhead;
 				while(temp2->next!=NULL){
-					glVertex2d(temp2->next->x,temp2->next->y);
+					glVertex2d(standard*(temp2->next->x+xtrans)- (standard - 1) * ww/2,standard*(temp2->next->y+ytrans) - (standard - 1) * wh/2);
 					temp2 = temp2->next;
 				}
-				if(_type == POLYGON) glVertex2d(vhead->next->x,vhead->next->y);
+				if(_type == POLYGON) glVertex2d(standard*(vhead->next->x + xtrans)- (standard - 1) * ww/2,standard*(vhead->next->y + ytrans) - (standard - 1) * wh/2);
 			glEnd();
 			glPopName();
 		}
@@ -79,7 +76,7 @@ class entry_node{
 			glPushName(borderNameId);
 			setColor(colorBorder);
 				glBegin(GL_POINTS);
-					glVertex2d(vhead->next->x,vhead->next->y);
+					glVertex2d(standard*(vhead->next->x + xtrans)- (standard - 1) * ww/2,standard*(vhead->next->y+ ytrans) - (standard - 1) * wh/2);
 				glEnd();
 			glPopName();
 		}
@@ -99,8 +96,8 @@ class entry_node{
 			vertice_node *temp2 = vhead;
 			int i = 0;
 			while(temp2->next!=NULL){
-				quad[i][0] = temp2->next->x;
-				quad[i][1] = temp2->next->y;
+				quad[i][0] = standard*(temp2->next->x+xtrans)- (standard - 1) * ww/2;
+				quad[i][1] = standard*(temp2->next->y+ytrans)- (standard - 1) * wh/2;
 				quad[i][2] = 0;
 				gluTessVertex(m_pTess, quad[i], quad[i]);
 				temp2 = temp2->next;
@@ -115,7 +112,6 @@ class entry_node{
 		}
 		void showCircle(){
 			if(solid){
-
 				if(tex) showTex();
 				else{
 				refreshmaxmin();
@@ -145,7 +141,7 @@ class entry_node{
 							if(y_temp>ymax) ymax = y_temp;
 							w = abs(xmax - xmin);
 							h = abs(ymax - ymin);
-						    glVertex2d(x_temp, y_temp);
+						    glVertex2d((x_temp+xtrans)*standard - (standard - 1) * ww / 2, (y_temp+ytrans)*standard - (standard - 1) * wh/ 2);
 				    	}
 				    	temp = temp->next;
 			    	}
@@ -164,13 +160,13 @@ class entry_node{
 					    double a4 = t*t*t;
 					    double x_temp = p1x*a1 + p2x*a2 + p3x*a3 + p4x*a4;
 					    double y_temp = p1y*a1 + p2y*a2 + p3y*a3 + p4y*a4;
-					    if(x_temp<xmin) xmin = x_temp;
+						if(x_temp<xmin) xmin = x_temp;
 						if(x_temp>xmax) xmax = x_temp;
 						if(y_temp<ymin) ymin = y_temp;
 						if(y_temp>ymax) ymax = y_temp;
 						w = abs(xmax - xmin);
 						h = abs(ymax - ymin);
-					    glVertex2d(x_temp, y_temp);
+						glVertex2d((x_temp+xtrans)*standard - (standard - 1) * ww / 2, (y_temp+ytrans)*standard - (standard - 1) * wh/ 2);
 			    	}
 			    glEnd();
 				glPopName();
@@ -205,7 +201,7 @@ class entry_node{
 							if(y_temp>ymax) ymax = y_temp;
 							w = abs(xmax - xmin);
 							h = abs(ymax - ymin);
-						    glVertex2d(x_temp, y_temp);
+							glVertex2d((x_temp+xtrans)*standard - (standard - 1) * ww / 2, (y_temp+ytrans)*standard - (standard - 1) * wh/ 2);
 				    	}
 				    	temp = temp->next;
 			    	}
@@ -230,7 +226,7 @@ class entry_node{
 						if(y_temp>ymax) ymax = y_temp;
 						w = abs(xmax - xmin);
 						h = abs(ymax - ymin);
-					    glVertex2d(x_temp, y_temp);
+						glVertex2d((x_temp+xtrans)*standard - (standard - 1) * ww / 2, (y_temp+ytrans)*standard - (standard - 1) * wh/ 2);
 			    	}
 			    glEnd();
 				glPopName();
@@ -266,7 +262,7 @@ class entry_node{
 							if(y_temp>ymax) ymax = y_temp;
 							w = abs(xmax - xmin);
 							h = abs(ymax - ymin);
-						    glVertex2d(x_temp, y_temp);
+							glVertex2d((x_temp+xtrans)*standard - (standard - 1) * ww / 2, (y_temp+ytrans)*standard - (standard - 1) * wh/ 2);
 				    	}
 				    	temp = temp->next;
 			    	}
@@ -280,10 +276,10 @@ class entry_node{
 			glLineStipple(1, 0x8888);
 			glColor4d(0,0,0,1);
 			glBegin(GL_LINE_STRIP & GL_LINE_LOOP);
-				glVertex2d(xmin-1,ymin-1);
-				glVertex2d(xmin-1,ymax+1);
-				glVertex2d(xmax+1,ymax+1);
-				glVertex2d(xmax+1,ymin-1);
+				glVertex2d(standard*(xmin-1 + xtrans)- (standard - 1) * ww/2,standard*(ymin + ytrans-1)- (standard - 1) * wh/2);
+				glVertex2d(standard*(xmin-1 + xtrans)- (standard - 1) * ww/2,standard*(ymax + ytrans+1)- (standard - 1) * wh/2);
+				glVertex2d(standard*(xmax+1 + xtrans)- (standard - 1) * ww/2,standard*(ymax + ytrans+1)- (standard - 1) * wh/2);
+				glVertex2d(standard*(xmax+1 + xtrans)- (standard - 1) * ww/2,standard*(ymin + ytrans-1)- (standard - 1) * wh/2);
 			glEnd();
 			glPopName();
 			glLineStipple(1, 0xFFFF);
@@ -296,29 +292,29 @@ class entry_node{
 				if(_type == CURVE || _type == CIRCLE){
 					glLineStipple(1, 0x8888);
 					glBegin(GL_LINE_STRIP);
-						glVertex2d(temp->left->x,temp->left->y);
-						glVertex2d(temp->x,temp->y);
-						glVertex2d(temp->right->x,temp->right->y);
+						glVertex2d(standard*(temp->left->x+xtrans)- (standard - 1) * ww/2,standard*(temp->left->y+ytrans)- (standard - 1) * wh/2);
+						glVertex2d(standard*(temp->x+xtrans)- (standard - 1) * ww/2,standard*(temp->y+ytrans)- (standard - 1) * wh/2);
+						glVertex2d(standard*(temp->right->x+xtrans)- (standard - 1) * ww/2,standard*(temp->right->y+ytrans)- (standard - 1) * wh/2);
 					glEnd();
 					glLineStipple(1, 0xFFFF);
 				}
 				glBegin(GL_POLYGON);
-					glVertex2d(temp->left->x-2,temp->left->y-2);
-					glVertex2d(temp->left->x-2,temp->left->y+2);
-					glVertex2d(temp->left->x+2,temp->left->y+2);
-					glVertex2d(temp->left->x+2,temp->left->y-2);
+					glVertex2d(standard*(temp->left->x-2+xtrans)- (standard - 1) * ww/2,standard*(temp->left->y-2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->left->x-2+xtrans)- (standard - 1) * ww/2,standard*(temp->left->y+2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->left->x+2+xtrans)- (standard - 1) * ww/2,standard*(temp->left->y+2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->left->x+2+xtrans)- (standard - 1) * ww/2,standard*(temp->left->y-2+ytrans)- (standard - 1) * wh/2);
 				glEnd();
 				glBegin(GL_POLYGON);
-					glVertex2d(temp->x-2,temp->y-2);
-					glVertex2d(temp->x-2,temp->y+2);
-					glVertex2d(temp->x+2,temp->y+2);
-					glVertex2d(temp->x+2,temp->y-2);
+					glVertex2d(standard*(temp->x-2+xtrans)- (standard - 1) * ww/2,standard*(temp->y-2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->x-2+xtrans)- (standard - 1) * ww/2,standard*(temp->y+2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->x+2+xtrans)- (standard - 1) * ww/2,standard*(temp->y+2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->x+2+xtrans)- (standard - 1) * ww/2,standard*(temp->y-2+ytrans)- (standard - 1) * wh/2);
 				glEnd();
 				glBegin(GL_POLYGON);
-					glVertex2d(temp->right->x-2,temp->right->y-2);
-					glVertex2d(temp->right->x-2,temp->right->y+2);
-					glVertex2d(temp->right->x+2,temp->right->y+2);
-					glVertex2d(temp->right->x+2,temp->right->y-2);
+					glVertex2d(standard*(temp->right->x-2+xtrans)- (standard - 1) * ww/2,standard*(temp->right->y-2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->right->x-2+xtrans)- (standard - 1) * ww/2,standard*(temp->right->y+2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->right->x+2+xtrans)- (standard - 1) * ww/2,standard*(temp->right->y+2+ytrans)- (standard - 1) * wh/2);
+					glVertex2d(standard*(temp->right->x+2+xtrans)- (standard - 1) * ww/2,standard*(temp->right->y-2+ytrans)- (standard - 1) * wh/2);
 				glEnd();
 				temp = temp->next;
 			}
@@ -626,6 +622,40 @@ class entry_node{
 			nvertices++;
 			refreshmaxmin();
 		}
+
+		//旋转
+		void spin(double theta){
+			vertice_node * temp = vhead->next;
+			double _x,_y;
+			while(temp != NULL){
+				_x = temp->x;
+				_y = temp->y;
+				_spin(_x,_y,theta,_x,_y);
+				temp->x = _x;
+				temp->y = _y;
+				_x = temp->left->x;
+				_y = temp->left->y;
+				_spin(_x,_y,theta,_x,_y);
+				temp->left->x = _x;
+				temp->left->y = _y;
+				_x = temp->right->x;
+				_y = temp->right->y;
+				_spin(_x,_y,theta,_x,_y);
+				temp->right->x = _x;
+				temp->right->y = _y;
+
+				temp = temp->next;
+			}
+			refreshmaxmin();
+		}
+
+		void _spin(double x,double y,double theta,double &_x, double &_y){
+			x -= xmin + w/2;
+			y -= ymin + h/2;
+			_x = x * cos(theta) - y * sin(theta) + xmin + w/2;
+			_y = x * sin(theta) + y * cos(theta) + ymin + h/2;
+		}
+
 		void movePoint(double _x, double _y,double newx, double newy){
 			double dx = newx - _x;
 			double dy = newy - _y;
@@ -657,11 +687,13 @@ class entry_node{
 			refreshmaxmin();
 		}
 		void refreshmaxmin(){
-			xmin = ww;
-			xmax = 0;
-			ymin = wh;
-			ymax = 0;
+			if(nvertices == 0) return;
 			vertice_node * temp = vhead->next;
+			xmin = temp->x;
+			xmax = temp->x;
+			ymin = temp->y;
+			ymax = temp->y;
+			temp = temp->next;
 			while(temp!=NULL){
 				double _x = temp->x;
 				double _y = temp->y;
